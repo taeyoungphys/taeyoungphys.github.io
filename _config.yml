@@ -1,10 +1,9 @@
 # ============================================================
 # 사이트 기본 정보
 # ============================================================
-title: "이태영의 물리 노트"
-subtitle: "Computational Many-Body Physics"
-name: "이태영"
-description: "전산다체물리 연구 노트 & 포트폴리오 — 텐서 네트워크, 최소 작용 원리, 그리고 물리학 이야기"
+title: "대학원생의 물리노트"
+name: "이태영(Taeyoung Lee)"
+description: "전산다체물리 연구 노트 — 텐서 네트워크, 양자 알고리즘, 그리고 물리학 이야기"
 url: "https://taeyoungphys.github.io"
 repository: "taeyoungphys/taeyoungphys.github.io"
 
@@ -50,16 +49,12 @@ plugins:
 # 저자 정보
 # ============================================================
 author:
-  name   : "이태영"
-  bio    : "물리학 대학원생 · 전산다체물리 · 텐서 네트워크"
-  location: "South Korea"
+  name   : "이태영(Taeyoung Lee)"
+  bio    : "<a href='/about/' style='font-size:0.85em;'>더보기 →</a>"
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/taeyoungphys"
-    - label: "티스토리"
-      icon: "fas fa-fw fa-blog"
-      url: "https://redinggoding.tistory.com"
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
       url: "mailto:tleephys@gmail.com"
