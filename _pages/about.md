@@ -3,6 +3,23 @@ permalink: /about/
 title: "About"
 ---
 
-Tempor velit sint sunt ipsum tempor enim ad qui ullamco. Est dolore anim ad velit duis dolore minim sunt aliquip amet commodo labore. Ut eu pariatur aute ea aute excepteur laborum. Esse ea esse excepteur minim mollit qui cillum excepteur ex dolore magna. Labore deserunt fugiat incididunt incididunt sint ea. Consequat dolore aute laboris quis proident quis non et est consectetur ex eiusmod sit culpa.
+## 이태영
 
-Cupidatat ea do et in excepteur in. Ad nostrud ut est esse eu duis ea sunt eiusmod. Aliquip tempor veniam sint elit fugiat. Velit incididunt laboris amet incididunt labore dolore irure velit excepteur commodo deserunt laborum. Consectetur eu fugiat veniam veniam Lorem labore magna eiusmod. Ea occaecat reprehenderit pariatur consectetur minim labore ut aliquip.
+물리학 대학원생으로, **전산다체물리(Computational Many-Body Physics)**를 연구하고 있습니다.
+텐서 네트워크(Tensor Networks)를 비롯한 수치적 방법론을 활용하여 양자 다체계를 해석합니다.
+
+### 연구 관심 분야
+
+- 텐서 네트워크 (MPS, DMRG, TEBD)
+- 양자 다체 시스템의 수치 시뮬레이션
+- Julia를 이용한 과학 계산
+
+### 이 블로그에 대해
+
+이 사이트는 연구 노트와 물리학 시리즈를 정리하는 공간입니다.
+수식이 많은 글은 여기에, 리뷰와 정보성 글은 [티스토리](https://redinggoding.tistory.com)에 올리고 있습니다.
+
+### 연락처
+
+- Email: tleephys@gmail.com
+- GitHub: [taeyoungphys](https://github.com/taeyoungphys)
