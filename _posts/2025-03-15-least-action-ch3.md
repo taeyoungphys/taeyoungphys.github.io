@@ -18,6 +18,10 @@ toc_sticky: true
 
 ### 최속 강하 곡선(Brachistochrone Curve)
 
+![최속 강하 곡선](/assets/images/least-action/ch3-brachistochrone.png){: .align-center}
+*최속 강하 곡선(Brachistochrone Curve) — 사이클로이드가 직선이나 포물선보다 빠르다*
+{: .text-center}
+
 최속 강하 곡선은 영어로 Brachistochrone curve라고 하는데, 이는 그리스어로 Brachisto는 shortest를 의미하고 chrone는 time을 의미한다. 최속 강하 곡선 문제는 균일한 중력장 내에서 임의의 두 점 사이를 지날때 이동하는 시간이 가장 작은 곡선을 구하는 문제이다.
 
 먼저, 베르누이는 에너지 보존으로부터 다음과 같은 식을 유도하였다.
@@ -43,6 +47,10 @@ $$v = \sqrt{2gy}$$
 이때, $v$는 속력이므로 0 보다 크거나 같은 만 취하면 된다.
 
 여기에서 베르누이는 최속 강하 곡선 문제를 굴절 문제로 변환하게 된다. 단, 굴절면이 무수히 많게 아래 그림의 예시와 같이 만들었다.
+
+![굴절면 분할](/assets/images/least-action/ch3-refraction-layers.png){: .align-center}
+*최속 강하 곡선을 A와 B 사이에 무수히 많은 굴절면을 나눈 것으로 생각했다*
+{: .text-center}
 
 또한, 위의 에너지 보존에서 유도된 높이와 속도의 관계를 이용해, 다음과 같이 굴절면을 설정한다.
 
@@ -71,6 +79,10 @@ $$\frac{\sin\theta_i}{\sqrt{y_i}} = \text{const.}$$
 따라서, 베르누이는 최속 강하 곡선(Brachistochrone Curve)는 사이클로이드 곡선(Cycloid Curve)임을 찾아낸 셈이다.
 
 ### 등시 곡선(Tautochrone Curve)
+
+![등시 곡선](/assets/images/least-action/ch3-tautochrone.png){: .align-center}
+*등시 곡선(Tautochrone Curve) — 시작점에 관계없이 최저점 도달 시간이 동일하다*
+{: .text-center}
 
 베르누이는 더욱 나아가 등시 곡선 문제에 도전했다. 등시 곡선은 영어로 tautochrone curve라고 하는데, 그리스어로 tauto는 same이란 뜻이고, chrone은 time이란 뜻이다.
 

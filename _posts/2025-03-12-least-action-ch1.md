@@ -24,6 +24,10 @@ $$\text{where } s = \frac{a+b+c}{2}$$
 
 ### 헤론의 반사 법칙의 수학적 증명
 
+![헤론의 반사 법칙](/assets/images/least-action/ch1-heron-reflection.png){: .align-center}
+*헤론의 반사 법칙(Heron's Principle of Reflection)*
+{: .text-center}
+
 우리가 알고 있는 반사 법칙은 먼저 입사각과 반사각의 크기는 항상 같다는 것이다. 이것은 헤론의 반사 법칙(Heron's Principle of Reflection)으로 부터 설명되는데, 어떻게 입사각과 반사각이 같음을 알려주는 것일까?
 
 위의 그림과 같이 빛이 A로부터 출발하여 반사면의 P 지점에 도달하여 반사되고, B에 도달한다고 하자. 그리고 B지점이 반사면에 대칭되어 대응되는 지점을 B'이라고 하자. 그렇다면 경로 AP+PB는 AP+PB'과 같다. 왜냐하면 PB = PB'이기 때문이다.

@@ -24,6 +24,10 @@ $$L = cT$$
 
 ### 굴절에서 페르마의 원리
 
+![페르마의 원리: 굴절](/assets/images/least-action/ch2-fermat-refraction.png){: .align-center}
+*굴절에서의 페르마 원리(Fermat's Principle)*
+{: .text-center}
+
 먼저, 경계면 윗부분이 굴절률 $n_1$이고, 경계면 아래부분을 굴절률 $n_2$라고 하자. 그렇다면 각 매질에서의 속도와 굴절률의 관계는 다음과 같다.
 
 $$v_1 = \frac{c}{n_1}, \quad v_2 = \frac{c}{n_2}$$

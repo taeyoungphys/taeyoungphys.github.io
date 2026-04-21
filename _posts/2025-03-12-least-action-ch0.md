@@ -18,7 +18,7 @@ toc_sticky: true
 
 이 글은 다음의 유튜브를 참고하였다. 잘 설명되어 있으니 참고해서 보면 좋을 것 같다.
 
-{% include video id="Q1Q_srZ-pbs" provider="youtube" %}
+{% include video id="Q10_srZ-pbs" provider="youtube" %}
 
 ---
 
