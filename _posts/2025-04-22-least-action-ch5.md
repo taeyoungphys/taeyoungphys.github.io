@@ -54,7 +54,9 @@ $\delta \int E\, dt = \delta(Et)$이고, 곱의 변분 규칙에 의해 $\delta(
 
 $$\delta \int (T - V)\, dt + E\delta t = 0$$
 
-양 끝점이 고정되어 있으면 $\delta t = 0$이므로,
+여기서 $\delta$는 **변분(variation)**이라 부르는 연산자이다. 변분이란, 어떤 물리량이 경로를 조금 바꾸었을 때 얼마나 변하는지를 나타낸다. 미분이 함수의 입력을 조금 바꾸었을 때의 변화를 뜻하듯이, 변분은 **경로 자체를 조금 바꾸었을 때의 변화**를 뜻한다.
+
+$\delta t$는 경로를 바꾸었을 때 시간 끝점이 변하는 양을 의미한다. 그런데 우리가 비교하고 싶은 것은 같은 출발 시각 $t_1$과 같은 도착 시각 $t_2$ 사이에서 어떤 경로가 진짜 경로인지를 찾는 것이다. 즉, **시간의 양 끝점 $t_1$과 $t_2$는 고정**되어 있으므로 $\delta t = 0$이다. 따라서,
 
 $$\boxed{\delta \int (T - V)\, dt = \delta \int L\, dt = 0}$$
 
@@ -102,7 +104,15 @@ $$S[q(t)] = \int_{t_1}^{t_2} \left( \frac{1}{2}m\left(\frac{dq}{dt}\right)^2 - V
 
 $$S[y(t)] = \int_{t_1}^{t_2} \left( \frac{1}{2}m\left(\frac{dy}{dt}\right)^2 - V(y) \right) dt$$
 
-$q = y + \eta$를 대입하고 $\eta$에 대해 1차까지만 전개하면,
+$q = y + \eta$를 대입하여 $S[q(t)]$를 전개해보자. 먼저 운동에너지 항은,
+
+$$\frac{1}{2}m\left(\frac{dq}{dt}\right)^2 = \frac{1}{2}m\left(\frac{dy}{dt} + \frac{d\eta}{dt}\right)^2 = \frac{1}{2}m\left(\frac{dy}{dt}\right)^2 + m\frac{dy}{dt}\frac{d\eta}{dt} + \frac{1}{2}m\left(\frac{d\eta}{dt}\right)^2$$
+
+퍼텐셜 에너지 항은 **테일러 전개(Taylor expansion)**를 적용하면,
+
+$$V(q) = V(y + \eta) = V(y) + \eta V'(y) + \frac{1}{2}\eta^2 V''(y) + \cdots$$
+
+여기서 $\eta(t)$는 진짜 경로로부터의 아주 작은 편차이므로, $\eta^2$ 이상의 항은 $\eta$에 비해 무시할 수 있을 정도로 작다. 이것은 미분에서 $f(x+h) \approx f(x) + hf'(x)$로 1차 근사하는 것과 같은 원리이다. **$\eta$에 대한 1차항만 남기면**, $S[q(t)] - S[y(t)]$에서 $S[y(t)]$와 공통인 항은 상쇄되고 다음만 남는다.
 
 $$\delta S = \int_{t_1}^{t_2} \left( m\frac{dy}{dt}\frac{d\eta}{dt} - \eta V'(y) \right) dt = 0$$
 
