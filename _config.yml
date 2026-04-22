@@ -59,6 +59,9 @@ author:
       icon: "fas fa-fw fa-envelope-square"
       url: "mailto:tleephys@gmail.com"
 
+atom_feed:
+  hide: true
+
 # ============================================================
 # 푸터
 # ============================================================
