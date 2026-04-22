@@ -26,9 +26,26 @@ h2 { font-size: 1.3em; }
 h3 { font-size: 1.15em; }
 h4 { font-size: 1.05em; }
 
-/* 수식 여백 조정 */
+/* 수식 여백 조정 + 모바일 가로 스크롤 */
 .MathJax_Display {
   margin: 0.8em 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* MathJax 수식 컨테이너 오버플로 방지 */
+mjx-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+mjx-container[jax="CHTML"][display="true"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
 }
 
 /* 표 스타일 */
