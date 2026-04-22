@@ -22,7 +22,7 @@ $$\text{where } s = \frac{a+b+c}{2}$$
 
 **헤론의 반사 법칙(Heron's Principle of Reflection)**은 빛의 경로를 최소화하는 방향으로 반사가 일어난다는 것이다. 이 법칙은 굴절과 같은 다른 광학 현상에서 설명되지 않았으나 반사 법칙에 대해 잘 설명되었다.
 
-### 헤론의 반사 법칙의 수학적 증명
+### 헤론의 반사 법칙의 증명
 
 ![헤론의 반사 법칙](/assets/images/least-action/ch1-heron-reflection.png){: .align-center}
 *헤론의 반사 법칙(Heron's Principle of Reflection)*
@@ -32,7 +32,7 @@ $$\text{where } s = \frac{a+b+c}{2}$$
 
 위의 그림과 같이 빛이 A로부터 출발하여 반사면의 P 지점에 도달하여 반사되고, B에 도달한다고 하자. 그리고 B지점이 반사면에 대칭되어 대응되는 지점을 B'이라고 하자. 그렇다면 경로 AP+PB는 AP+PB'과 같다. 왜냐하면 PB = PB'이기 때문이다.
 
-헤론의 반사 법칙(Heron's Principle of Reflection)에 의하면, 빛은 빛의 경로를 최소화하는 방향으로 반사가 일어난다고 하였다. 이때 빛의 경로의 길이를 **광학적 경로 길이(Optical Path Length, OPL)**라고 한다. 따라서, OPL을 최소화하는 문제가 되어야 하므로 OPL AP+PB'는 최소가 되어야 한다. 따라서, AP+B'의 최소 경로는 직선 AB'과 같다.
+헤론의 반사 법칙(Heron's Principle of Reflection)에 의하면, 빛은 빛의 경로를 최소화하는 방향으로 반사가 일어난다고 하였다. 이때 빛의 경로의 길이를 **광학적 경로 길이(Optical Path Length, OPL)**라고 한다. 따라서, OPL을 최소화하는 문제가 되어야 하므로 OPL $\overline{AP}+\overline{PB'}$는 최소가 되어야 한다. 따라서, $\overline{AP}+\overline{PB'}$의 최소 경로는 직선 $\overline{AB'}$과 같다.
 
 즉, 점 P는 직선 AB' 위에 놓여 있으므로, 맞꼭지각에 의해 각도 알파와 감마가 서로 크기 같다. 각도 베타와 감마는 서로 같으므로, 즉, 입사각과 반사각이 같다.
 
