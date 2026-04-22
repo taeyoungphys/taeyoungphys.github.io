@@ -120,7 +120,19 @@ $$\delta S = \int_{t_1}^{t_2} \left( m\frac{dy}{dt}\frac{d\eta}{dt} - \eta V'(y)
 
 $$\int_{t_1}^{t_2} m\frac{dy}{dt}\frac{d\eta}{dt}\, dt = \left[ m\frac{dy}{dt}\eta \right]_{t_1}^{t_2} - \int_{t_1}^{t_2} m\frac{d^2 y}{dt^2}\eta\, dt$$
 
-경계 조건 $\eta(t_1) = \eta(t_2) = 0$에 의해 경계항은 사라진다. 따라서,
+경계항 $\left[ m\dfrac{dy}{dt}\eta \right]_{t_1}^{t_2}$이 사라지는 이유를 살펴보자. 진짜 경로 $y(t)$와 벗어난 경로 $q(t)$는 출발점과 도착점이 같아야 하므로, 양 끝점에서 다음이 성립한다.
+
+| | **$t = t_1$ (출발)** | **$t = t_2$ (도착)** |
+|---|---|---|
+| **진짜 경로** | $y(t_1) = y_1$ | $y(t_2) = y_2$ |
+| **벗어난 경로** | $q(t_1) = y_1$ | $q(t_2) = y_2$ |
+| **편차** | $\eta(t_1) = q(t_1) - y(t_1) = 0$ | $\eta(t_2) = q(t_2) - y(t_2) = 0$ |
+
+즉, 어떤 경로를 시도하든 출발점과 도착점은 반드시 일치해야 하므로, 편차 $\eta(t)$는 양 끝에서 반드시 0이다. 따라서 경계항은,
+
+$$\left[ m\frac{dy}{dt}\eta \right]_{t_1}^{t_2} = m\frac{dy}{dt}\bigg\rvert_{t_2} \cdot \underbrace{\eta(t_2)}_{= 0} - m\frac{dy}{dt}\bigg\rvert_{t_1} \cdot \underbrace{\eta(t_1)}_{= 0} = 0$$
+
+이 되어 사라진다. 따라서,
 
 $$\int_{t_1}^{t_2} m\frac{dy}{dt}\frac{d\eta}{dt}\, dt = -\int_{t_1}^{t_2} m\frac{d^2 y}{dt^2}\eta\, dt$$
 
