@@ -42,6 +42,6 @@ $$\text{where } s = \frac{a+b+c}{2}$$
 
 ---
 
-> **시리즈 네비게이션**
+> **챕터 이동**
 >
 > [이전 챕터: Ch.0 — 소개](/series/least-action-ch0/) \| [다음 챕터: Ch.2 — 페르마의 원리](/series/least-action-ch2/)

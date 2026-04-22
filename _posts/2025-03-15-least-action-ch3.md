@@ -102,6 +102,6 @@ $$\frac{\sin\theta_i}{\sqrt{y_i}} = \text{const.}$$
 
 ---
 
-> **시리즈 네비게이션**
+> **챕터 이동**
 >
 > [이전 챕터: Ch.2 — 페르마의 원리](/series/least-action-ch2/) \| 다음 챕터: *준비 중*

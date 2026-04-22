@@ -90,6 +90,6 @@ $$n_1 \sin\theta_1 = n_2 \sin\theta_2$$
 
 ---
 
-> **시리즈 네비게이션**
+> **챕터 이동**
 >
 > [이전 챕터: Ch.1 — 헤론의 반사 법칙](/series/least-action-ch1/) \| [다음 챕터: Ch.3 — 오일러-라그랑주 방정식](/series/least-action-ch3/)
