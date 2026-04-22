@@ -67,9 +67,6 @@ footer:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/taeyoungphys"
-    - label: "티스토리"
-      icon: "fas fa-fw fa-blog"
-      url: "https://redinggoding.tistory.com"
 
 # ============================================================
 # 기본값 (defaults)
