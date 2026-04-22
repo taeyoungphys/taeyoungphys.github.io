@@ -10,9 +10,9 @@ toc_sticky: true
 
 ## 0. 소개
 
-고전 역학에서는 물론, 물리를 배우기 위한 가장 기본적인 수식이라고 하면 뉴턴 제 2법칙 $F = ma$가 빠질 순 없다. 하지만 이 개념을 좀더 확장시킬 순 없을까? 혹은 $F = ma$가 이루는 근본적인 원리가 뭘까?
+고전 역학에서는 물론, 물리를 배우기 위한 가장 기본적인 수식이라고 하면 **뉴턴의 제2법칙(Newton's Second Law)** $F = ma$가 빠질 순 없다. 하지만 이 개념을 좀더 확장시킬 순 없을까? 혹은 $F = ma$가 이루는 근본적인 원리가 뭘까?
 
-이번 글에서는 광학의 헤론의 반사법칙(Heron's Principle of Reflection)과 페르마의 원리(Fermat's Principle)부터 시작하여 최소 작용의 원리(Least Action Law)와 해밀턴의 원리(Hamilton's Principle)의 의미로 이어지는 등장배경에 대해 살펴보도록 한다. 그리고 $F=ma$가 결국 최소 작용의 원리로 이어지는 놀라운 결과를 보여주고자 한다.
+이번 글에서는 광학의 **헤론의 반사 법칙(Heron's Principle of Reflection)**과 **페르마의 원리(Fermat's Principle)**부터 시작하여 **최소 작용의 원리(Principle of Least Action)**와 **해밀턴의 원리(Hamilton's Principle)**의 의미로 이어지는 등장배경에 대해 살펴보도록 한다. 그리고 $F=ma$가 결국 최소 작용의 원리로 이어지는 놀라운 결과를 보여주고자 한다.
 
 ---
 
@@ -30,4 +30,4 @@ toc_sticky: true
 
 > **챕터 이동**
 >
-> ~~이전 챕터~~ \| [다음 챕터: Ch.1 — 스넬의 법칙에서 페르마의 원리로](/series/least-action-ch1/)
+> ~~이전 챕터~~ \| [다음 챕터: Ch.1 — 헤론의 반사 법칙](/series/least-action-ch1/)

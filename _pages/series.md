@@ -18,6 +18,7 @@ author_profile: true
 | Ch.2 | 페르마의 원리 | [보기](/series/least-action-ch2/) |
 | Ch.3 | 광학과 역학을 연결시킨 베르누이의 아이디어 | [보기](/series/least-action-ch3/) |
 | Ch.4 | 모페르뒤의 원리와 작용 | [보기](/series/least-action-ch4/) |
+| Ch.5 | 해밀턴의 원리와 변분법 | [보기](/series/least-action-ch5/) |
 
 ---
 
