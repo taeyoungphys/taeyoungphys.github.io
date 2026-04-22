@@ -18,10 +18,8 @@ title: "About"
 
 ### 이 블로그에 대해
 
-연구 노트와 물리학 시리즈를 정리하는 공간입니다.
-수식이 많은 글은 여기에, 리뷰와 정보성 글은 [티스토리](https://redinggoding.tistory.com)에 올리고 있습니다.
+연구하면서 공부한 내용에 대해 정리하거나, 재미있는 물리 내용에 대해 포스팅합니다.
 
 ### 연락처
 
 - Email: tleephys@gmail.com
-- GitHub: [taeyoungphys](https://github.com/taeyoungphys)
