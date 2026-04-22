@@ -17,6 +17,7 @@ author_profile: true
 | Ch.1 | 헤론의 반사 법칙 | [보기](/series/least-action-ch1/) |
 | Ch.2 | 페르마의 원리 | [보기](/series/least-action-ch2/) |
 | Ch.3 | 광학과 역학을 연결시킨 베르누이의 아이디어 | [보기](/series/least-action-ch3/) |
+| Ch.4 | 모페르뒤의 원리와 작용 | [보기](/series/least-action-ch4/) |
 
 ---
 
