@@ -30,3 +30,16 @@ h4 { font-size: 1.05em; }
 .MathJax_Display {
   margin: 0.8em 0 !important;
 }
+
+/* 표 스타일 */
+table {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 1.05em;
+  width: auto;
+  min-width: 60%;
+}
+table th, table td {
+  padding: 0.6em 1.2em;
+  text-align: center;
+}
