@@ -49,7 +49,7 @@ plugins:
 # 저자 정보
 # ============================================================
 author:
-  name   : "이태영(Taeyoung Lee)"
+  name   : "이태영의 물리노트"
   bio    : "<a href='/about/' style='font-size:0.85em;'>더보기 →</a>"
   links:
     - label: "GitHub"
