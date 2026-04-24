@@ -1,14 +1,53 @@
 <!-- ============================================================
      Floating 위젯 영역
      - 우상단: Google Translate 드롭다운
-     - 우하단: 팔로우 친구 목록 (토글)
+     - 우측: 친구 세로 배너 (데스크탑, ≥ 1024px)
+     - 우하단: 친구 floating 카드 (태블릿 이하, < 1024px)
      ============================================================ -->
 
 <!-- Google Translate (우상단) -->
 <div id="google_translate_element" class="gtranslate-float" aria-label="언어 번역"></div>
 
-<!-- Friends Follow Widget (우하단) -->
 {% if site.data.friends %}
+<!-- ===== 데스크탑: 우측 세로 배너 (C안) ===== -->
+<aside id="friends-banner"
+       class="friends-banner"
+       aria-label="팔로우 친구 목록">
+  <button class="friends-banner__collapse"
+          type="button"
+          aria-expanded="true"
+          aria-controls="friends-banner-body"
+          title="친구 목록 접기/펼치기">
+    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+  </button>
+  <div class="friends-banner__body" id="friends-banner-body">
+    <div class="friends-banner__title">
+      <i class="fas fa-user-friends" aria-hidden="true"></i>
+    </div>
+    <div class="friends-banner__list">
+      {% for friend in site.data.friends %}
+        <a class="friends-banner__item"
+           href="{{ friend.url }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           title="{{ friend.name }}{% if friend.blurb %} — {{ friend.blurb }}{% endif %}">
+          {% if friend.avatar %}
+            <img src="{{ friend.avatar }}"
+                 alt="{{ friend.name }}"
+                 class="friends-banner__avatar"
+                 loading="lazy">
+          {% else %}
+            <span class="friends-banner__avatar friends-banner__avatar--fallback">
+              {{ friend.name | slice: 0, 1 }}
+            </span>
+          {% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</aside>
+
+<!-- ===== 모바일/태블릿: 우하단 floating 토글 카드 (기존 방식) ===== -->
 <div id="friends-widget" class="friends-widget collapsed" aria-live="polite">
   <button class="friends-widget__toggle"
           type="button"
@@ -45,31 +84,46 @@
 
 <script>
 (function() {
+  // ----- 데스크탑 배너 접기/펼치기 -----
+  var banner = document.getElementById('friends-banner');
+  if (banner) {
+    var collapseBtn = banner.querySelector('.friends-banner__collapse');
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', function() {
+        var expanded = collapseBtn.getAttribute('aria-expanded') === 'true';
+        collapseBtn.setAttribute('aria-expanded', String(!expanded));
+        banner.classList.toggle('is-collapsed', expanded);
+      });
+    }
+  }
+
+  // ----- 모바일 floating 토글 -----
   var widget = document.getElementById('friends-widget');
-  if (!widget) return;
-  var toggle = widget.querySelector('.friends-widget__toggle');
-  var list = widget.querySelector('.friends-widget__list');
-  if (!toggle || !list) return;
+  if (widget) {
+    var toggle = widget.querySelector('.friends-widget__toggle');
+    var list = widget.querySelector('.friends-widget__list');
+    if (toggle && list) {
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        widget.classList.toggle('collapsed', expanded);
+        if (expanded) {
+          list.setAttribute('hidden', '');
+        } else {
+          list.removeAttribute('hidden');
+        }
+      });
 
-  toggle.addEventListener('click', function() {
-    var expanded = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!expanded));
-    widget.classList.toggle('collapsed', expanded);
-    if (expanded) {
-      list.setAttribute('hidden', '');
-    } else {
-      list.removeAttribute('hidden');
+      document.addEventListener('click', function(e) {
+        if (!widget.contains(e.target) && toggle.getAttribute('aria-expanded') === 'true') {
+          toggle.setAttribute('aria-expanded', 'false');
+          widget.classList.add('collapsed');
+          list.setAttribute('hidden', '');
+        }
+      });
     }
-  });
-
-  // 바깥 클릭 시 닫기
-  document.addEventListener('click', function(e) {
-    if (!widget.contains(e.target) && toggle.getAttribute('aria-expanded') === 'true') {
-      toggle.setAttribute('aria-expanded', 'false');
-      widget.classList.add('collapsed');
-      list.setAttribute('hidden', '');
-    }
-  });
+  }
 })();
 </script>
 {% endif %}

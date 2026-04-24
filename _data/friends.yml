@@ -4,4 +4,10 @@
 # ============================================================
 - name: "Mageluer"
   url: "https://www.mageluer.com/blog/"
+  avatar: "/assets/images/friends/mageluer.jpg"
   blurb: "Mageluer is learning breaststroke"
+
+- name: "Seungho Lee"
+  url: "https://sites.google.com/view/seungholeephysics/home"
+  avatar: "/assets/images/friends/seungholee.png"
+  blurb: "Physics homepage"

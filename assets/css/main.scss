@@ -232,9 +232,153 @@ body { top: 0 !important; position: static !important; }
   text-overflow: ellipsis;
 }
 
-@media (max-width: 600px) {
+/* 모바일/태블릿 보정 */
+@media (max-width: 480px) {
   .friends-widget { bottom: 0.6rem; right: 0.6rem; }
   .friends-widget__list { width: 14rem; }
   .friends-widget__label { display: none; }
   .friends-widget__toggle { padding: 0.55rem 0.7rem; }
+}
+
+/* ============================================================
+   Friends Side Banner (데스크탑, ≥ 64em ≈ 1024px)
+   - 아바타만 세로로 나열, 상단에 접기 버튼
+   ============================================================ */
+.friends-banner {
+  display: none;                 /* 기본 숨김, 데스크탑 미디어쿼리에서 표시 */
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 9500;
+  flex-direction: column;
+  align-items: stretch;
+  background: rgba(30, 30, 40, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: none;
+  border-radius: 0.6rem 0 0 0.6rem;
+  box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 0.35rem 0.45rem 0.5rem;
+  transition: transform 0.25s ease, padding 0.25s ease;
+}
+.friends-banner__collapse {
+  align-self: flex-end;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  background: transparent;
+  color: #bbb;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.75em;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.25s ease;
+}
+.friends-banner__collapse:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+.friends-banner__collapse:focus-visible {
+  outline: 2px solid #6aa0ff;
+  outline-offset: 2px;
+}
+.friends-banner__collapse .fa-chevron-right { transition: transform 0.25s ease; }
+.friends-banner.is-collapsed .friends-banner__collapse .fa-chevron-right {
+  transform: rotate(180deg);
+}
+
+.friends-banner__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  max-height: 60vh;
+  padding-top: 0.15rem;
+  transition: max-height 0.25s ease, opacity 0.25s ease, margin 0.25s ease;
+}
+.friends-banner__title {
+  font-size: 0.85em;
+  color: #888;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  text-align: center;
+}
+.friends-banner__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.1rem 0;
+  scrollbar-width: thin;
+}
+.friends-banner__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #333;
+  border: 2px solid transparent;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  text-decoration: none !important;
+  color: #fff !important;
+}
+.friends-banner__item:hover {
+  transform: scale(1.08);
+  border-color: rgba(106, 160, 255, 0.7);
+  box-shadow: 0 0 0 2px rgba(106, 160, 255, 0.25);
+}
+.friends-banner__avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.friends-banner__avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.95em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #4a6cf7, #7d5af1);
+  color: #fff;
+}
+
+/* 접힌 상태: body 접고 collapse 버튼만 노출 */
+.friends-banner.is-collapsed {
+  padding: 0.35rem 0.25rem;
+}
+.friends-banner.is-collapsed .friends-banner__body {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding-top: 0;
+  pointer-events: none;
+}
+
+/* ============================================================
+   반응형 분기: 1024px(64em) 기준
+   - ≥ 64em  (데스크탑) : 배너 표시, 우하단 floating 숨김
+   - <  64em  (태블릿 이하) : 배너 숨김, 우하단 floating 표시
+   ============================================================ */
+@media (min-width: 64em) {
+  .friends-banner { display: flex; }
+  .friends-widget { display: none; }
+}
+@media (max-width: 63.999em) {
+  .friends-banner { display: none; }
+  .friends-widget { display: block; }
 }
