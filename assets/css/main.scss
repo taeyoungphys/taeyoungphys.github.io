@@ -65,3 +65,176 @@ table th {
   font-weight: bold;
   border-bottom: 2px solid #555577;
 }
+
+/* ============================================================
+   Floating Google Translate (우상단)
+   ============================================================ */
+.gtranslate-float {
+  position: fixed;
+  top: 0.6rem;
+  right: 1rem;
+  z-index: 10000;
+  background: rgba(30, 30, 40, 0.85);
+  padding: 0.25rem 0.45rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  /* Google Translate 내부 요소 톤다운 */
+  .goog-te-gadget {
+    font-family: inherit !important;
+    color: #ddd !important;
+    font-size: 0.8em !important;
+  }
+  .goog-te-gadget-simple {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 0.15rem 0.4rem !important;
+    border-radius: 0.3rem !important;
+    line-height: 1.4 !important;
+  }
+  .goog-te-gadget-simple .goog-te-menu-value {
+    color: #eee !important;
+  }
+  .goog-te-gadget-simple .goog-te-menu-value span {
+    color: #eee !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+  }
+  img.goog-te-gadget-icon { display: none !important; }
+}
+
+/* Google Translate가 강제로 body 상단에 삽입하는 바 숨김 */
+.skiptranslate,
+iframe.goog-te-banner-frame { display: none !important; }
+body { top: 0 !important; position: static !important; }
+
+@media (max-width: 600px) {
+  .gtranslate-float {
+    top: 0.4rem;
+    right: 0.5rem;
+    padding: 0.2rem 0.35rem;
+  }
+}
+
+/* ============================================================
+   Floating Friends Widget (우하단)
+   ============================================================ */
+.friends-widget {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 9000;
+  font-family: inherit;
+  font-size: 0.9em;
+  color: #eee;
+}
+
+.friends-widget__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  background: rgba(30, 30, 40, 0.9);
+  color: #eee;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform 0.15s ease, background 0.15s ease;
+  font: inherit;
+}
+.friends-widget__toggle:hover {
+  transform: translateY(-2px);
+  background: rgba(45, 45, 60, 0.95);
+}
+.friends-widget__toggle:focus-visible {
+  outline: 2px solid #6aa0ff;
+  outline-offset: 2px;
+}
+.friends-widget__label {
+  font-size: 0.9em;
+  letter-spacing: 0.02em;
+}
+
+.friends-widget__list {
+  margin-top: 0.5rem;
+  padding: 0.6rem;
+  width: 17rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: rgba(30, 30, 40, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.6rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.friends-widget__title {
+  font-size: 0.78em;
+  color: #aaa;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: 0.02em;
+}
+.friends-widget__item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.35rem;
+  border-radius: 0.35rem;
+  color: #ddd !important;
+  text-decoration: none !important;
+  transition: background 0.15s ease;
+}
+.friends-widget__item + .friends-widget__item { margin-top: 0.2rem; }
+.friends-widget__item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff !important;
+}
+.friends-widget__avatar {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #444;
+}
+.friends-widget__avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(135deg, #4a6cf7, #7d5af1);
+  text-transform: uppercase;
+  font-size: 0.9em;
+}
+.friends-widget__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.friends-widget__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.friends-widget__blurb {
+  font-size: 0.75em;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 600px) {
+  .friends-widget { bottom: 0.6rem; right: 0.6rem; }
+  .friends-widget__list { width: 14rem; }
+  .friends-widget__label { display: none; }
+  .friends-widget__toggle { padding: 0.55rem 0.7rem; }
+}

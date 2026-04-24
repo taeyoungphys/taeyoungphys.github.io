@@ -1,0 +1,7 @@
+# ============================================================
+# 팔로우 친구들 (우하단 위젯에 렌더링됨)
+# name, url 필수 / avatar, blurb 선택
+# ============================================================
+- name: "Mageluer"
+  url: "https://www.mageluer.com/blog/"
+  blurb: "Mageluer is learning breaststroke"
