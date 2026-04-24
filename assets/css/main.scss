@@ -153,10 +153,17 @@ table th {
   img.goog-te-gadget-icon { display: none !important; }
 }
 
-/* Google Translate가 강제로 body 상단에 삽입하는 바 숨김 */
-.skiptranslate,
-iframe.goog-te-banner-frame { display: none !important; }
+/* Google Translate가 body 상단에 강제로 붙이는 배너 iframe만 숨김
+   주의: 위젯 본체(#google_translate_element 내부)도 .skiptranslate 클래스를
+   갖는 경우가 있으므로, iframe 및 body 직하 요소로만 범위 제한. */
+iframe.goog-te-banner-frame,
+iframe.goog-te-menu-frame,
+body > .skiptranslate { display: none !important; }
 body { top: 0 !important; position: static !important; }
+
+/* 위젯 본체(#google_translate_element 안)는 반드시 보이도록 강제 */
+#google_translate_element .skiptranslate { display: inline-block !important; }
+#google_translate_element .goog-te-gadget { display: inline-block !important; }
 
 @media (max-width: 600px) {
   .gtranslate-float {
