@@ -1,0 +1,57 @@
+{% if post.header.teaser %}
+  {% capture teaser %}{{ post.header.teaser }}{% endcapture %}
+{% else %}
+  {% assign teaser = site.teaser %}
+{% endif %}
+
+{% if post.id %}
+  {% assign title = post.title | markdownify | remove: "<p>" | remove: "</p>" %}
+{% else %}
+  {% assign title = post.title %}
+{% endif %}
+
+<div class="{{ include.type | default: 'list' }}__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    {% if include.type == "grid" and teaser %}
+      <div class="archive__item-teaser">
+        <img src="{{ teaser | relative_url }}" alt="">
+      </div>
+    {% endif %}
+    <h2 class="archive__item-title no_toc p-name" itemprop="headline">
+      {% if post.link %}
+        <a href="{{ post.link }}">{{ title }}</a> <a href="{{ post.url | relative_url }}" class="u-url" rel="permalink"><i class="fas fa-link" aria-hidden="true" title="permalink"></i><span class="sr-only">Permalink</span></a>
+      {% else %}
+        <a class="u-url" href="{{ post.url | relative_url }}" rel="permalink">{{ title }}</a>
+      {% endif %}
+    </h2>
+    {% include page__meta.html type=include.type %}
+
+    {%- comment -%}
+      ===== H2 섹션을 파싱해서 목차로 렌더링 =====
+      최대 3개까지 표시하고, 더 있으면 "…N개 더보기" 링크로 포스트 페이지로 이동.
+      kramdown auto_ids 기본값(true) 가정 — 각 H2에 id 자동 부여됨.
+    {%- endcomment -%}
+    {% assign h2_segments = post.content | split: '<h2 ' %}
+    {% assign h2_total = h2_segments.size | minus: 1 %}
+    {% if h2_total > 0 %}
+      <ul class="archive__item-toc">
+        {% for seg in h2_segments offset: 1 limit: 3 %}
+          {% assign seg_id = seg | split: 'id="' | last | split: '"' | first %}
+          {% assign seg_inner = seg | split: '</h2>' | first %}
+          {% assign seg_parts = seg_inner | split: '>' %}
+          {% assign seg_title_raw = seg_parts | slice: 1, 99 | join: '>' %}
+          {% assign seg_title = seg_title_raw | strip_html | strip %}
+          <li class="archive__item-toc-item">
+            <a href="{{ post.url | relative_url }}#{{ seg_id }}">{{ seg_title }}</a>
+          </li>
+        {% endfor %}
+        {% if h2_total > 3 %}
+          {% assign more_count = h2_total | minus: 3 %}
+          <li class="archive__item-toc-more">
+            <a href="{{ post.url | relative_url }}">… {{ more_count }}개 더보기</a>
+          </li>
+        {% endif %}
+      </ul>
+    {% endif %}
+  </article>
+</div>

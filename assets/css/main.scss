@@ -67,6 +67,55 @@ table th {
 }
 
 /* ============================================================
+   Archive item 목차 (홈 + 아카이브 전체 리스트)
+   archive-single.html 오버라이드와 연동
+   ============================================================ */
+.archive__item-toc {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  font-size: 0.85em;
+  line-height: 1.55;
+
+  li {
+    position: relative;
+    margin: 0.1rem 0;
+    padding-left: 1.1em;
+
+    &::before {
+      content: "›";
+      position: absolute;
+      left: 0.15em;
+      color: #777;
+      font-weight: bold;
+    }
+
+    a {
+      color: #b8c2d9;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    a:hover {
+      color: #6aa0ff;
+      text-decoration: underline;
+    }
+  }
+
+  .archive__item-toc-more {
+    margin-top: 0.25rem;
+
+    &::before { content: ""; }
+
+    a {
+      font-style: italic;
+      color: #888;
+      padding-left: 0;
+    }
+    a:hover { color: #aaa; }
+  }
+}
+
+/* ============================================================
    Floating Google Translate (우상단)
    ============================================================ */
 .gtranslate-float {
