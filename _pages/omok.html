@@ -1,0 +1,603 @@
+---
+title: "Gomoku"
+permalink: /playground/omok/
+layout: single
+author_profile: false
+toc: false
+---
+
+<style>
+  .omok-app { max-width: 720px; margin: 0 auto; position: relative; }
+  .omok-status {
+    padding: 0.6rem 0.9rem; margin: 0 0 0.8rem;
+    background: rgba(59,130,246,0.12);
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px; font-weight: 500;
+  }
+  .omok-controls {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    align-items: center; margin-bottom: 1rem;
+  }
+  .omok-controls button {
+    padding: 0.42rem 0.9rem;
+    border: 1px solid #555;
+    background: #1e1e1e; color: #eee;
+    border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+  }
+  .omok-controls button:hover { background: #333; }
+  .omok-controls button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .omok-rule-info {
+    font-size: 0.88rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    background: rgba(59,130,246,0.10);
+    color: #cfd8e6;
+  }
+  .omok-board-wrap {
+    position: relative; width: 100%;
+    max-width: 600px; margin: 0 auto;
+    aspect-ratio: 1 / 1;
+  }
+  #omok-canvas {
+    width: 100%; height: 100%;
+    background: #d8b173;
+    border-radius: 4px;
+    cursor: crosshair; touch-action: none;
+    display: block;
+  }
+  .omok-history-wrap { margin-top: 1rem; }
+  .omok-history-wrap h4 { margin: 0 0 0.4rem; font-size: 0.95rem; }
+  .omok-history {
+    max-height: 180px; overflow-y: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.84rem;
+    background: rgba(0,0,0,0.22);
+    border-radius: 4px;
+    padding: 0.5rem 0.8rem;
+    line-height: 1.55;
+  }
+  .omok-history-item.cur { background: rgba(59,130,246,0.25); border-radius: 3px; }
+  .omok-stone-mini {
+    display: inline-block; width: 12px; height: 12px;
+    border-radius: 50%; vertical-align: middle;
+    margin: 0 6px 2px 0; border: 1px solid #888;
+  }
+  .stone-b { background: #111; }
+  .stone-w { background: #f7f7f7; }
+
+  /* Start overlay */
+  .omok-start-overlay {
+    position: absolute; inset: 0;
+    background: rgba(15,15,15,0.94);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 2rem;
+    border-radius: 6px;
+  }
+  .omok-start-card {
+    background: #1c1c1c;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 1.6rem 1.8rem;
+    width: 360px; max-width: 92%;
+    color: #eee;
+  }
+  .omok-start-card h2 { margin: 0 0 0.3rem; font-size: 1.4rem; }
+  .start-sub { margin: 0 0 1.1rem; opacity: 0.75; font-size: 0.9rem; }
+  .start-opt-group { margin-bottom: 1.1rem; }
+  .start-opt-label {
+    font-size: 0.78rem; text-transform: uppercase;
+    letter-spacing: 0.05em; opacity: 0.6;
+    margin-bottom: 0.4rem;
+  }
+  .start-opt-radios { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .start-opt-radios label {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    cursor: pointer; user-select: none; font-size: 0.92rem;
+  }
+  .start-btn-primary {
+    width: 100%;
+    padding: 0.65rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-top: 0.4rem;
+  }
+  .start-btn-primary:hover { background: #2563eb; }
+</style>
+
+<div class="omok-app">
+
+  <!-- Game UI -->
+  <div class="omok-status" id="omok-status"></div>
+
+  <div class="omok-controls">
+    <span class="omok-rule-info" id="omok-rule-info"></span>
+    <button id="omok-reset" type="button" data-i18n="reset"></button>
+    <button id="omok-undo" type="button" data-i18n="undo"></button>
+    <button id="omok-redo" type="button" data-i18n="redo"></button>
+    <button id="omok-settings" type="button" data-i18n="settings"></button>
+  </div>
+
+  <div class="omok-board-wrap">
+    <canvas id="omok-canvas"></canvas>
+  </div>
+
+  <div class="omok-history-wrap">
+    <h4 id="omok-hist-title" data-i18n="historyTitle"></h4>
+    <div class="omok-history" id="omok-history"></div>
+  </div>
+
+  <!-- Start overlay -->
+  <div class="omok-start-overlay" id="omok-start">
+    <div class="omok-start-card">
+      <h2 data-i18n="startTitle"></h2>
+      <p class="start-sub" data-i18n="startSubtitle"></p>
+
+      <div class="start-opt-group">
+        <div class="start-opt-label" data-i18n="ruleLabel"></div>
+        <div class="start-opt-radios">
+          <label><input type="radio" name="start-rule" value="renju" checked> <span data-i18n="ruleRenju"></span></label>
+          <label><input type="radio" name="start-rule" value="free"> <span data-i18n="ruleFree"></span></label>
+        </div>
+      </div>
+
+      <div class="start-opt-group">
+        <div class="start-opt-label" data-i18n="langLabel"></div>
+        <div class="start-opt-radios">
+          <label><input type="radio" name="start-lang" value="ko" checked> 한국어</label>
+          <label><input type="radio" name="start-lang" value="en"> English</label>
+        </div>
+      </div>
+
+      <button id="start-btn" class="start-btn-primary" data-i18n="startBtn"></button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const SIZE = 15;
+  const DIRS = [[1,0],[0,1],[1,1],[1,-1]];
+
+  const I18N = {
+    ko: {
+      blackTurn: '흑(선공)의 차례',
+      whiteTurn: '백(후공)의 차례',
+      blackWin: '🎉 흑(선공) 승!',
+      whiteWin: '🎉 백(후공) 승!',
+      forbidden: '금수입니다 (33 / 44 / 6목 금지)',
+      historyTitle: '이전 수 히스토리',
+      noHistory: '착수 기록 없음',
+      reset: '재시작',
+      undo: '← 뒤로',
+      redo: '앞으로 →',
+      settings: '설정',
+      startTitle: '오목 (Gomoku)',
+      startSubtitle: '규칙과 언어를 선택하세요',
+      ruleLabel: '규칙',
+      ruleFree: '일반룰',
+      ruleRenju: '렌주룰 (권장)',
+      langLabel: '언어 / Language',
+      startBtn: '게임 시작',
+      rNameFree: '일반룰',
+      rNameRenju: '렌주룰',
+      rulePrefix: '규칙: ',
+      confirmAbandon: '진행 중인 게임을 포기하고 설정 화면으로 돌아갈까요?'
+    },
+    en: {
+      blackTurn: "Black's turn (first player)",
+      whiteTurn: "White's turn (second player)",
+      blackWin: '🎉 Black (first) wins!',
+      whiteWin: '🎉 White (second) wins!',
+      forbidden: 'Forbidden move (3-3 / 4-4 / overline)',
+      historyTitle: 'Move history',
+      noHistory: 'No moves yet',
+      reset: 'Restart',
+      undo: '← Undo',
+      redo: 'Redo →',
+      settings: 'Settings',
+      startTitle: 'Gomoku',
+      startSubtitle: 'Pick rule and language',
+      ruleLabel: 'Rule',
+      ruleFree: 'Free rule',
+      ruleRenju: 'Renju (recommended)',
+      langLabel: 'Language',
+      startBtn: 'Start game',
+      rNameFree: 'Free',
+      rNameRenju: 'Renju',
+      rulePrefix: 'Rule: ',
+      confirmAbandon: 'Abandon current game and return to settings?'
+    }
+  };
+
+  const canvas = document.getElementById('omok-canvas');
+  const ctx = canvas.getContext('2d');
+  const statusEl = document.getElementById('omok-status');
+  const ruleInfoEl = document.getElementById('omok-rule-info');
+  const resetBtn = document.getElementById('omok-reset');
+  const undoBtn = document.getElementById('omok-undo');
+  const redoBtn = document.getElementById('omok-redo');
+  const settingsBtn = document.getElementById('omok-settings');
+  const histEl = document.getElementById('omok-history');
+  const startOverlay = document.getElementById('omok-start');
+  const startBtn = document.getElementById('start-btn');
+
+  let board, history, redoStack, current, gameOver, winner, lastMove;
+  let cellSize = 0, padding = 0;
+  let statusFlashT = null;
+  let renjuMode = true;
+  let currentLang = 'ko';
+
+  const inB = (x,y) => x>=0 && y>=0 && x<SIZE && y<SIZE;
+  const t = (key) => (I18N[currentLang][key] !== undefined ? I18N[currentLang][key] : key);
+
+  function applyLang() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      el.textContent = t(k);
+    });
+    if (ruleInfoEl) {
+      ruleInfoEl.textContent = t('rulePrefix') + (renjuMode ? t('rNameRenju') : t('rNameFree'));
+    }
+  }
+
+  function showStart() {
+    // preselect current values
+    const ruleVal = renjuMode ? 'renju' : 'free';
+    const ruleRadio = document.querySelector('input[name="start-rule"][value="' + ruleVal + '"]');
+    if (ruleRadio) ruleRadio.checked = true;
+    const langRadio = document.querySelector('input[name="start-lang"][value="' + currentLang + '"]');
+    if (langRadio) langRadio.checked = true;
+    applyLang();
+    startOverlay.style.display = 'flex';
+  }
+  function hideStart() { startOverlay.style.display = 'none'; }
+
+  function init() {
+    board = Array.from({length: SIZE}, () => Array(SIZE).fill(null));
+    history = [];
+    redoStack = [];
+    current = 'B';
+    gameOver = false;
+    winner = null;
+    lastMove = null;
+    render();
+  }
+
+  function countConsec(b, x, y, dx, dy, color) {
+    let c = 1;
+    for (let s=1; s<=5; s++) {
+      const nx=x+s*dx, ny=y+s*dy;
+      if (inB(nx,ny) && b[ny][nx]===color) c++; else break;
+    }
+    for (let s=1; s<=5; s++) {
+      const nx=x-s*dx, ny=y-s*dy;
+      if (inB(nx,ny) && b[ny][nx]===color) c++; else break;
+    }
+    return c;
+  }
+
+  function maxConsec(b, x, y, color) {
+    let m = 0;
+    for (const [dx,dy] of DIRS) m = Math.max(m, countConsec(b,x,y,dx,dy,color));
+    return m;
+  }
+
+  function isOpenFourAt(b, x, y, dx, dy, color) {
+    let lc=0, rc=0;
+    for (let s=1; s<=4; s++) {
+      const nx=x+s*dx, ny=y+s*dy;
+      if (inB(nx,ny) && b[ny][nx]===color) rc++; else break;
+    }
+    for (let s=1; s<=4; s++) {
+      const nx=x-s*dx, ny=y-s*dy;
+      if (inB(nx,ny) && b[ny][nx]===color) lc++; else break;
+    }
+    if (lc + rc + 1 !== 4) return false;
+    const lx=x-(lc+1)*dx, ly=y-(lc+1)*dy;
+    const rx=x+(rc+1)*dx, ry=y+(rc+1)*dy;
+    return inB(lx,ly) && b[ly][lx]===null && inB(rx,ry) && b[ry][rx]===null;
+  }
+
+  function createsFourInDir(b, x, y, dx, dy, color) {
+    for (let s=-4; s<=4; s++) {
+      if (s===0) continue;
+      const nx=x+s*dx, ny=y+s*dy;
+      if (!inB(nx,ny) || b[ny][nx]!==null) continue;
+      b[ny][nx] = color;
+      const c = countConsec(b, x, y, dx, dy, color);
+      b[ny][nx] = null;
+      if (c === 5) return true;
+    }
+    return false;
+  }
+
+  function createsOpenThreeInDir(b, x, y, dx, dy, color) {
+    for (let s=-4; s<=4; s++) {
+      if (s===0) continue;
+      const nx=x+s*dx, ny=y+s*dy;
+      if (!inB(nx,ny) || b[ny][nx]!==null) continue;
+      b[ny][nx] = color;
+      const isOf = isOpenFourAt(b, x, y, dx, dy, color);
+      b[ny][nx] = null;
+      if (isOf) return true;
+    }
+    return false;
+  }
+
+  function isForbidden(b, x, y) {
+    const m = maxConsec(b, x, y, 'B');
+    if (m === 5) return false;
+    if (m >= 6) return true;
+    let fours = 0, openThrees = 0;
+    for (const [dx,dy] of DIRS) {
+      if (createsFourInDir(b,x,y,dx,dy,'B')) fours++;
+      if (createsOpenThreeInDir(b,x,y,dx,dy,'B')) openThrees++;
+    }
+    if (fours >= 2) return true;
+    if (openThrees >= 2) return true;
+    return false;
+  }
+
+  function checkForbiddenAt(x, y) {
+    if (board[y][x] !== null) return false;
+    if (current !== 'B' || !renjuMode || gameOver) return false;
+    board[y][x] = 'B';
+    const f = isForbidden(board, x, y);
+    board[y][x] = null;
+    return f;
+  }
+
+  function placeStone(x, y) {
+    if (gameOver || !inB(x,y) || board[y][x] !== null) return;
+
+    if (renjuMode && current === 'B') {
+      board[y][x] = 'B';
+      const f = isForbidden(board, x, y);
+      if (f) {
+        board[y][x] = null;
+        flashStatus(t('forbidden'));
+        return;
+      }
+      board[y][x] = null;
+    }
+
+    board[y][x] = current;
+    const m = { x, y, color: current };
+    history.push(m);
+    redoStack = [];
+    lastMove = m;
+
+    const run = maxConsec(board, x, y, current);
+    let win = false;
+    if (current === 'B' && renjuMode) {
+      if (run === 5) win = true;
+    } else {
+      if (run >= 5) win = true;
+    }
+
+    if (win) { gameOver = true; winner = current; }
+    else { current = (current === 'B') ? 'W' : 'B'; }
+
+    render();
+  }
+
+  function undo() {
+    if (history.length === 0) return;
+    const m = history.pop();
+    board[m.y][m.x] = null;
+    redoStack.push(m);
+    current = m.color;
+    gameOver = false;
+    winner = null;
+    lastMove = history.length ? history[history.length-1] : null;
+    render();
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return;
+    const m = redoStack.pop();
+    board[m.y][m.x] = m.color;
+    history.push(m);
+    lastMove = m;
+    const run = maxConsec(board, m.x, m.y, m.color);
+    let win = false;
+    if (m.color === 'B' && renjuMode) { if (run === 5) win = true; }
+    else { if (run >= 5) win = true; }
+    if (win) { gameOver = true; winner = m.color; }
+    else { current = (m.color === 'B') ? 'W' : 'B'; gameOver = false; winner = null; }
+    render();
+  }
+
+  function flashStatus(msg) {
+    statusEl.innerHTML = msg;
+    statusEl.style.background = 'rgba(220,38,38,0.20)';
+    statusEl.style.borderLeftColor = '#dc2626';
+    if (statusFlashT) clearTimeout(statusFlashT);
+    statusFlashT = setTimeout(() => updateStatusUI(), 1500);
+  }
+
+  function updateStatusUI() {
+    if (gameOver) {
+      const ind = winner === 'B'
+        ? '<span class="omok-stone-mini stone-b"></span>' + t('blackWin')
+        : '<span class="omok-stone-mini stone-w"></span>' + t('whiteWin');
+      statusEl.innerHTML = ind;
+      statusEl.style.background = 'rgba(34,197,94,0.20)';
+      statusEl.style.borderLeftColor = '#22c55e';
+    } else {
+      const ind = current === 'B'
+        ? '<span class="omok-stone-mini stone-b"></span>' + t('blackTurn')
+        : '<span class="omok-stone-mini stone-w"></span>' + t('whiteTurn');
+      statusEl.innerHTML = ind;
+      statusEl.style.background = 'rgba(59,130,246,0.12)';
+      statusEl.style.borderLeftColor = '#3b82f6';
+    }
+    undoBtn.disabled = (history.length === 0);
+    redoBtn.disabled = (redoStack.length === 0);
+  }
+
+  function recomputeGeometry() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const cssW = rect.width || 600;
+    const cssH = rect.height || 600;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    padding = cssW * 0.04;
+    cellSize = (cssW - 2 * padding) / (SIZE - 1);
+    return { w: cssW, h: cssH };
+  }
+
+  function cellToPx(x, y) {
+    return { px: padding + x * cellSize, py: padding + y * cellSize };
+  }
+  function pxToCell(px, py) {
+    return { x: Math.round((px - padding) / cellSize),
+             y: Math.round((py - padding) / cellSize) };
+  }
+
+  function render() {
+    const { w, h } = recomputeGeometry();
+    ctx.fillStyle = '#d8b173';
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.strokeStyle = '#3a2a18';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i=0; i<SIZE; i++) {
+      const a = cellToPx(i, 0), b = cellToPx(i, SIZE-1);
+      ctx.moveTo(a.px, a.py); ctx.lineTo(b.px, b.py);
+      const c = cellToPx(0, i), d = cellToPx(SIZE-1, i);
+      ctx.moveTo(c.px, c.py); ctx.lineTo(d.px, d.py);
+    }
+    ctx.stroke();
+
+    const stars = [[3,3],[3,11],[7,7],[11,3],[11,11]];
+    ctx.fillStyle = '#3a2a18';
+    for (const [sx, sy] of stars) {
+      const p = cellToPx(sx, sy);
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, Math.max(2.5, cellSize*0.08), 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    if (renjuMode && current === 'B' && !gameOver) {
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 2;
+      for (let yy=0; yy<SIZE; yy++) {
+        for (let xx=0; xx<SIZE; xx++) {
+          if (board[yy][xx] !== null) continue;
+          if (!checkForbiddenAt(xx, yy)) continue;
+          const p = cellToPx(xx, yy);
+          const r = cellSize * 0.28;
+          ctx.beginPath();
+          ctx.moveTo(p.px - r, p.py - r); ctx.lineTo(p.px + r, p.py + r);
+          ctx.moveTo(p.px + r, p.py - r); ctx.lineTo(p.px - r, p.py + r);
+          ctx.stroke();
+        }
+      }
+    }
+
+    for (let yy=0; yy<SIZE; yy++) {
+      for (let xx=0; xx<SIZE; xx++) {
+        const v = board[yy][xx];
+        if (v === null) continue;
+        const p = cellToPx(xx, yy);
+        const r = cellSize * 0.42;
+        ctx.beginPath();
+        ctx.arc(p.px, p.py, r, 0, Math.PI*2);
+        ctx.fillStyle = (v === 'B') ? '#1a1a1a' : '#f5f5f5';
+        ctx.fill();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    if (lastMove) {
+      const p = cellToPx(lastMove.x, lastMove.y);
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, cellSize * 0.18, 0, Math.PI*2);
+      ctx.stroke();
+    }
+
+    updateStatusUI();
+    renderHistory();
+    if (ruleInfoEl) {
+      ruleInfoEl.textContent = t('rulePrefix') + (renjuMode ? t('rNameRenju') : t('rNameFree'));
+    }
+  }
+
+  function renderHistory() {
+    if (history.length === 0) {
+      histEl.innerHTML = '<div style="opacity:0.6">' + t('noHistory') + '</div>';
+      return;
+    }
+    const items = history.map((m, i) => {
+      const ind = m.color === 'B' ? '●' : '○';
+      const xL = String.fromCharCode(65 + m.x);
+      const cur = (i === history.length-1) ? ' cur' : '';
+      return '<div class="omok-history-item' + cur + '">' +
+             (i+1) + '. ' + ind + ' ' + xL + (m.y+1) + '</div>';
+    }).join('');
+    histEl.innerHTML = items;
+    histEl.scrollTop = histEl.scrollHeight;
+  }
+
+  // Events
+  canvas.addEventListener('click', (e) => {
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const { x, y } = pxToCell(px, py);
+    placeStone(x, y);
+  });
+
+  resetBtn.addEventListener('click', () => init());
+  undoBtn.addEventListener('click', undo);
+  redoBtn.addEventListener('click', redo);
+  settingsBtn.addEventListener('click', () => {
+    if (history.length > 0 && !gameOver) {
+      if (!confirm(t('confirmAbandon'))) return;
+    }
+    showStart();
+  });
+  window.addEventListener('resize', () => render());
+
+  // Live update lang on radio change in start screen
+  document.querySelectorAll('input[name="start-lang"]').forEach(r => {
+    r.addEventListener('change', () => {
+      currentLang = r.value;
+      applyLang();
+    });
+  });
+
+  startBtn.addEventListener('click', () => {
+    const ruleVal = document.querySelector('input[name="start-rule"]:checked').value;
+    const langVal = document.querySelector('input[name="start-lang"]:checked').value;
+    renjuMode = (ruleVal === 'renju');
+    currentLang = langVal;
+    applyLang();
+    init();
+    hideStart();
+  });
+
+  // First load: show start screen, prepare default lang
+  applyLang();
+  init();
+  showStart();
+})();
+</script>

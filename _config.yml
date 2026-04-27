@@ -11,6 +11,7 @@ github_username: taeyoungphys
 minimal_mistakes_skin: "dark"
 search: true
 locale: "ko-KR"
+logo: "/assets/images/logo.svg"
 
 # ============================================================
 # 빌드 설정

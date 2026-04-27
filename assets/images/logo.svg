@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="taeyoungphys logo">
+  <title>taeyoungphys — Ensemble to magnetization</title>
+  <style>
+    .frame { stroke: #ececec; }
+    .spin  { stroke: #d8d8d8; fill: #d8d8d8; }
+    .mag   { stroke: #4f9bff; fill: #4f9bff; }
+    @media (prefers-color-scheme: light) {
+      .frame { stroke: #1f1f1f; }
+      .spin  { stroke: #2a2a2a; fill: #2a2a2a; }
+      .mag   { stroke: #1d4ed8; fill: #1d4ed8; }
+    }
+  </style>
+
+  <!-- Outer hexagon (frame) -->
+  <polygon class="frame" points="100,20 169,60 169,140 100,180 31,140 31,60"
+           fill="none" stroke-width="5" stroke-linejoin="round"/>
+
+  <!-- 8 disordered spin arrows around the center (the ensemble) -->
+  <g class="spin" stroke-width="2" stroke-linecap="round">
+    <g transform="translate(150,100) rotate(70)"><line x1="0" y1="6" x2="0" y2="-4" fill="none"/><polygon points="0,-9 -3.4,-3 3.4,-3" stroke="none"/></g>
+    <g transform="translate(135,62) rotate(205)"><line x1="0" y1="6" x2="0" y2="-4" fill="none"/><polygon points="0,-9 -3.4,-3 3.4,-3" stroke="none"/></g>
+    <g transform="translate(96,48) rotate(295)"><line x1="0" y1="6" x2="0" y2="-4" fill="none"/><polygon points="0,-9 -3.4,-3 3.4,-3" stroke="none"/></g>
+    <g transform="translate(63,62) rotate(110)"><line x1="0" y1="6" x2="0" y2="-4" fill="none"/><polygon points="0,-9 -3.4,-3 3.4,-3" stroke="none"/></g>
+    <g transform="translate(50,100) rotate(15)"><line x1="0" y1="6" x2="0" y2="-4" fill="none"/><polygon points="0,-9 -3.4,-3 3.4,-3" stroke="none"/></g>
+    <g transform="translate(63,138) rotate(80)"><line x1="0" y1="6" x2="0" y2="-4" fill="none"/><polygon points="0,-9 -3.4,-3 3.4,-3" stroke="none"/></g>
+    <g transform="translate(104,152) rotate(240)"><line x1="0" y1="6" x2="0" y2="-4" fill="none"/><polygon points="0,-9 -3.4,-3 3.4,-3" stroke="none"/></g>
+    <g transform="translate(137,138) rotate(165)"><line x1="0" y1="6" x2="0" y2="-4" fill="none"/><polygon points="0,-9 -3.4,-3 3.4,-3" stroke="none"/></g>
+  </g>
+
+  <!-- Central emergent magnetization arrow -->
+  <g class="mag">
+    <line x1="100" y1="128" x2="100" y2="78" stroke-width="7" stroke-linecap="round"/>
+    <polygon points="100,64 90,84 110,84" stroke="none"/>
+  </g>
+</svg>

@@ -438,3 +438,22 @@ body { top: 0 !important; position: static !important; }
   .friends-banner { display: none; }
   .friends-widget { display: block; }
 }
+
+/* ============================================================
+   사이트 로고 (마스트헤드)
+   - MM 기본 max-height(2rem)이 작아 보이는 문제 해결
+   - SVG는 자체 색을 가지므로 inherit/currentColor에 의존하지 않음
+   ============================================================ */
+.greedy-nav .site-logo {
+  margin-right: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+}
+.greedy-nav .site-logo img {
+  max-height: 3.2rem;
+  width: auto;
+  display: block;
+}
+@media (max-width: 47.999em) {
+  .greedy-nav .site-logo img { max-height: 2.6rem; }
+}

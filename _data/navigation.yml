@@ -7,3 +7,5 @@ main:
     url: /notes/
   - title: "About"
     url: /about/
+  - title: "More"
+    url: /more/
