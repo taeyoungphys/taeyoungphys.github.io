@@ -5,73 +5,41 @@
      - 우하단: 친구 floating 카드 (태블릿 이하, < 1024px)
      ============================================================ -->
 
-<!-- ===== 언어 전환 (우상단) ===== -->
-<div id="lang-switcher" class="lang-switcher" aria-label="Language">
-  <button class="lang-switcher__btn"
-          type="button"
-          aria-haspopup="true"
-          aria-expanded="false"
-          aria-controls="lang-switcher-menu">
+<!-- ===== 언어 전환 (우상단) — <details> 네이티브 토글 사용 ===== -->
+<details id="lang-switcher" class="lang-switcher">
+  <summary class="lang-switcher__btn">
     <i class="fas fa-globe" aria-hidden="true"></i>
     <span class="lang-switcher__label">Language</span>
     <i class="fas fa-caret-down" aria-hidden="true"></i>
-  </button>
-  <ul id="lang-switcher-menu" class="lang-switcher__menu" role="menu">
-    <li role="none"><a href="#" data-lang="ko" role="menuitem">한국어 (원문)</a></li>
-    <li role="none"><a href="#" data-lang="en" role="menuitem">English</a></li>
-    <li role="none"><a href="#" data-lang="ja" role="menuitem">日本語</a></li>
-    <li role="none"><a href="#" data-lang="zh-CN" role="menuitem">中文 (简体)</a></li>
-    <li role="none"><a href="#" data-lang="zh-TW" role="menuitem">中文 (繁體)</a></li>
-    <li role="none"><a href="#" data-lang="es" role="menuitem">Español</a></li>
-    <li role="none"><a href="#" data-lang="fr" role="menuitem">Français</a></li>
-    <li role="none"><a href="#" data-lang="de" role="menuitem">Deutsch</a></li>
-    <li role="none"><a href="#" data-lang="ru" role="menuitem">Русский</a></li>
-  </ul>
-</div>
+  </summary>
+  <div class="lang-switcher__menu">
+    <a href="#" data-lang="ko">한국어 (원문)</a>
+    <a href="#" data-lang="en">English</a>
+    <a href="#" data-lang="ja">日本語</a>
+    <a href="#" data-lang="zh-CN">中文 (简体)</a>
+    <a href="#" data-lang="zh-TW">中文 (繁體)</a>
+    <a href="#" data-lang="es">Español</a>
+    <a href="#" data-lang="fr">Français</a>
+    <a href="#" data-lang="de">Deutsch</a>
+    <a href="#" data-lang="ru">Русский</a>
+  </div>
+</details>
 
-<!-- 언어 전환 스크립트 — 어떤 데이터 의존성도 없이 항상 실행 -->
+<!-- 언어 전환 스크립트 — 리다이렉트만 담당. 토글은 <details>가 처리 -->
 <script>
 (function() {
   var ORIGIN_HOST = 'taeyoungphys.github.io';
   var sw = document.getElementById('lang-switcher');
   if (!sw) return;
-  var swBtn  = sw.querySelector('.lang-switcher__btn');
-  var swMenu = sw.querySelector('.lang-switcher__menu');
-  if (!swBtn || !swMenu) return;
 
-  function closeMenu() {
-    swBtn.setAttribute('aria-expanded', 'false');
-    sw.classList.remove('is-open');
-  }
-  function openMenu() {
-    swBtn.setAttribute('aria-expanded', 'true');
-    sw.classList.add('is-open');
-  }
-
-  swBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (sw.classList.contains('is-open')) closeMenu(); else openMenu();
-  });
-  document.addEventListener('click', function(e) {
-    if (!sw.contains(e.target)) closeMenu();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeMenu();
-  });
-
-  swMenu.addEventListener('click', function(e) {
+  // 메뉴 항목 클릭 → 번역 페이지로 이동
+  sw.addEventListener('click', function(e) {
     var a = e.target.closest('a[data-lang]');
     if (!a) return;
     e.preventDefault();
-    e.stopPropagation();
-    translateTo(a.getAttribute('data-lang'));
-  });
-
-  function translateTo(lang) {
-    // 기존 _x_tr_* 파라미터 제거
+    var lang = a.getAttribute('data-lang');
     var params = new URLSearchParams(location.search);
-    ['_x_tr_sl','_x_tr_tl','_x_tr_hl','_x_tr_pto','_x_tr_hist'].forEach(function(p){
+    ['_x_tr_sl','_x_tr_tl','_x_tr_hl','_x_tr_pto','_x_tr_hist'].forEach(function(p) {
       params.delete(p);
     });
     var host;
@@ -84,10 +52,14 @@
       params.set('_x_tr_hl', lang);
     }
     var search = params.toString();
-    var url = 'https://' + host + location.pathname +
-              (search ? '?' + search : '') + location.hash;
-    location.href = url;
-  }
+    location.href = 'https://' + host + location.pathname +
+                    (search ? '?' + search : '') + location.hash;
+  });
+
+  // 외부 클릭 시 메뉴 닫기
+  document.addEventListener('click', function(e) {
+    if (!sw.contains(e.target)) sw.removeAttribute('open');
+  });
 })();
 </script>
 
