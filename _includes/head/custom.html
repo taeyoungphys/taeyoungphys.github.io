@@ -30,3 +30,36 @@
 <script type="text/javascript"
   src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
   async></script>
+
+<!-- Google Translate 기본 라벨("언어 선택" / "Select Language")을 "Language"로 치환 -->
+<script type="text/javascript">
+(function() {
+  function relabel() {
+    var root = document.getElementById('google_translate_element');
+    if (!root) return false;
+    var spans = root.querySelectorAll('.goog-te-menu-value span');
+    var changed = false;
+    for (var i = 0; i < spans.length; i++) {
+      var t = (spans[i].textContent || '').trim();
+      if (t === '언어 선택' || t === 'Select Language') {
+        spans[i].textContent = 'Language';
+        changed = true;
+      }
+    }
+    return changed;
+  }
+  function start() {
+    var tries = 0;
+    var iv = setInterval(function() {
+      tries++;
+      relabel();
+      if (tries > 30) clearInterval(iv); // ~6초 후 중단
+    }, 200);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+})();
+</script>

@@ -153,11 +153,10 @@ table th {
   img.goog-te-gadget-icon { display: none !important; }
 }
 
-/* Google Translate가 body 상단에 강제로 붙이는 배너 iframe만 숨김
-   주의: 위젯 본체(#google_translate_element 내부)도 .skiptranslate 클래스를
-   갖는 경우가 있으므로, iframe 및 body 직하 요소로만 범위 제한. */
+/* Google Translate가 body 상단에 강제로 붙이는 배너 iframe만 숨김.
+   주의: goog-te-menu-frame 은 *언어 선택 드롭다운 메뉴*의 iframe 이므로
+   숨기면 안 됨 (드롭다운이 보이지 않게 됨). banner-frame 만 숨긴다. */
 iframe.goog-te-banner-frame,
-iframe.goog-te-menu-frame,
 body > .skiptranslate { display: none !important; }
 body { top: 0 !important; position: static !important; }
 
