@@ -116,87 +116,68 @@ table th {
 }
 
 /* ============================================================
-   언어 전환 드롭다운 (우상단) — 체크박스 해킹 (순수 CSS 토글)
-   <input> + <label for> + ~ 형제 결합자 → JS 없이 토글
+   언어 전환 — 마스트헤드 아래 우상단, 항상 보이는 직접 링크
    ============================================================ */
 .lang-switcher {
   position: fixed !important;
-  top: 0.6rem !important;
+  top: 4.5rem !important;            /* 마스트헤드(약 4rem) 아래 */
   right: 1rem !important;
-  z-index: 10000 !important;
-  font-family: inherit;
-}
-/* 체크박스 자체는 숨김 — 단, hidden 속성 대신 시각적으로만 숨겨야 label 이 동작함 */
-.lang-switcher__toggle {
-  position: absolute !important;
-  width: 1px; height: 1px;
-  margin: -1px; padding: 0; border: 0;
-  overflow: hidden; clip: rect(0 0 0 0);
-}
-
-.lang-switcher__btn {
+  z-index: 2147483647 !important;    /* 32-bit max — 어떤 요소도 위에 못 옴 */
   display: inline-flex !important;
   align-items: center;
-  gap: 0.4rem;
-  background: rgba(30, 30, 40, 0.9);
-  color: #eee !important;
+  gap: 0.3rem;
+  background: rgba(30, 30, 40, 0.92);
   border: 1px solid rgba(255,255,255,0.2);
-  padding: 0.4rem 0.75rem;
-  font-size: 0.85em;
   border-radius: 0.5rem;
-  cursor: pointer;
+  padding: 0.3rem 0.5rem;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  line-height: 1.4;
-  user-select: none;
-  margin: 0 !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  font-family: inherit;
+  pointer-events: auto !important;   /* 명시적으로 클릭 받기 */
 }
-.lang-switcher__btn:hover { background: rgba(50,55,65,0.95); }
-.lang-switcher__caret {
-  font-size: 0.85em; opacity: 0.7;
-  transition: transform 0.15s ease;
+.lang-switcher__icon {
+  color: #cfd8e6;
+  font-size: 0.85em;
+  pointer-events: none;
+  margin-right: 0.15rem;
 }
-/* 체크박스가 체크되면 caret 회전 */
-.lang-switcher__toggle:checked ~ .lang-switcher__btn .lang-switcher__caret {
-  transform: rotate(180deg);
-}
-
-.lang-switcher__menu {
-  display: none !important;
-  position: absolute !important;
-  top: calc(100% + 0.4rem) !important;
-  right: 0 !important;
-  min-width: 200px;
-  background: rgba(25, 28, 36, 0.97);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 0.5rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  font-size: 0.88em;
-  padding: 0.35rem 0;
-}
-/* 체크박스 체크 시 메뉴 표시 — 형제 결합자 */
-.lang-switcher__toggle:checked ~ .lang-switcher__menu {
-  display: block !important;
-}
-
-.lang-switcher__menu a {
-  display: block !important;
-  padding: 0.5rem 0.95rem !important;
-  color: #e2e6ee !important;
+.lang-switcher a {
+  color: #eee !important;
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.22rem 0.45rem;
+  border-radius: 4px;
   text-decoration: none !important;
   border: 0 !important;
+  pointer-events: auto !important;
+  transition: background 0.12s ease;
 }
-.lang-switcher__menu a:hover {
-  background: rgba(70, 130, 230, 0.22) !important;
+.lang-switcher a:hover {
+  background: rgba(70,130,230,0.32);
   color: #fff !important;
 }
 
 @media (max-width: 600px) {
-  .lang-switcher { top: 0.4rem !important; right: 0.5rem !important; }
-  .lang-switcher__btn { padding: 0.3rem 0.55rem; font-size: 0.8em; }
+  .lang-switcher {
+    top: 4rem !important;
+    right: 0.5rem !important;
+    padding: 0.25rem 0.4rem;
+    gap: 0.2rem;
+  }
+  .lang-switcher a { padding: 0.18rem 0.32rem; font-size: 0.74em; }
+}
+
+/* ----- minimal-mistakes의 숨겨진 검색 오버레이가 클릭 가로채지 못하게 ----- */
+.search-content:not(.is--visible) {
+  pointer-events: none !important;
+}
+.initial-content {
+  /* 일부 빌드에서 .initial-content 가 nav 와 같은 stacking 위에 올라와
+     fixed 요소를 가리는 케이스 방지 */
+  position: relative;
+  z-index: 1;
 }
 
 /* ============================================================

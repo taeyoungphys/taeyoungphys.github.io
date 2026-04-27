@@ -5,67 +5,41 @@
      - 우하단: 친구 floating 카드 (태블릿 이하, < 1024px)
      ============================================================ -->
 
-<!-- ===== 언어 전환 (우상단) — 체크박스 해킹 (순수 CSS 토글, JS 의존 X) ===== -->
-<div id="lang-switcher" class="lang-switcher">
-  <input type="checkbox" id="lang-switcher-toggle" class="lang-switcher__toggle">
-  <label for="lang-switcher-toggle" class="lang-switcher__btn" aria-label="Language">
-    <i class="fas fa-globe" aria-hidden="true"></i>
-    <span class="lang-switcher__label">Language</span>
-    <i class="fas fa-caret-down lang-switcher__caret" aria-hidden="true"></i>
-  </label>
-  <div class="lang-switcher__menu">
-    <a href="#" data-lang="ko">한국어 (원문)</a>
-    <a href="#" data-lang="en">English</a>
-    <a href="#" data-lang="ja">日本語</a>
-    <a href="#" data-lang="zh-CN">中文 (简体)</a>
-    <a href="#" data-lang="zh-TW">中文 (繁體)</a>
-    <a href="#" data-lang="es">Español</a>
-    <a href="#" data-lang="fr">Français</a>
-    <a href="#" data-lang="de">Deutsch</a>
-    <a href="#" data-lang="ru">Русский</a>
-  </div>
+<!-- ===== 언어 전환 (우상단) — 항상 보이는 직접 링크 (이벤트 의존성 0) ===== -->
+<div id="lang-switcher" class="lang-switcher" aria-label="Language">
+  <i class="fas fa-globe lang-switcher__icon" aria-hidden="true"></i>
+  <a href="#" data-lang="ko" title="한국어 (원문)">KR</a>
+  <a href="#" data-lang="en" title="English">EN</a>
+  <a href="#" data-lang="ja" title="日本語">JA</a>
+  <a href="#" data-lang="zh-CN" title="中文">CN</a>
+  <a href="#" data-lang="es" title="Español">ES</a>
+  <a href="#" data-lang="fr" title="Français">FR</a>
+  <a href="#" data-lang="de" title="Deutsch">DE</a>
 </div>
 
-<!-- 언어 전환 스크립트 — 리다이렉트 + 외부 클릭으로 닫기만 담당 -->
 <script>
 (function() {
-  var ORIGIN_HOST = 'taeyoungphys.github.io';
-  var sw = document.getElementById('lang-switcher');
-  var toggle = document.getElementById('lang-switcher-toggle');
-  if (!sw || !toggle) return;
+  var ORIGIN = 'taeyoungphys.github.io';
+  var TR_KEYS = ['_x_tr_sl','_x_tr_tl','_x_tr_hl','_x_tr_pto','_x_tr_hist'];
 
-  // 메뉴 항목 클릭 → 번역 페이지로 이동
-  sw.addEventListener('click', function(e) {
-    var a = e.target.closest('a[data-lang]');
-    if (!a) return;
-    e.preventDefault();
-    toggle.checked = false;
+  document.querySelectorAll('#lang-switcher a[data-lang]').forEach(function(a) {
     var lang = a.getAttribute('data-lang');
+    var path = location.pathname;
+    var hash = location.hash;
+    // 기존 _x_tr_* 파라미터 제거, 나머지 쿼리는 보존
     var params = new URLSearchParams(location.search);
-    ['_x_tr_sl','_x_tr_tl','_x_tr_hl','_x_tr_pto','_x_tr_hist'].forEach(function(p) {
-      params.delete(p);
-    });
-    var host;
+    TR_KEYS.forEach(function(k){ params.delete(k); });
+
     if (lang === 'ko') {
-      host = ORIGIN_HOST;
+      var search = params.toString();
+      a.href = 'https://' + ORIGIN + path + (search ? '?' + search : '') + hash;
     } else {
-      host = ORIGIN_HOST.replace(/\./g, '-') + '.translate.goog';
+      var host = ORIGIN.replace(/\./g, '-') + '.translate.goog';
       params.set('_x_tr_sl', 'ko');
       params.set('_x_tr_tl', lang);
       params.set('_x_tr_hl', lang);
+      a.href = 'https://' + host + path + '?' + params.toString() + hash;
     }
-    var search = params.toString();
-    location.href = 'https://' + host + location.pathname +
-                    (search ? '?' + search : '') + location.hash;
-  });
-
-  // 외부 클릭 시 메뉴 닫기
-  document.addEventListener('click', function(e) {
-    if (!sw.contains(e.target)) toggle.checked = false;
-  });
-  // ESC 로 닫기
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') toggle.checked = false;
   });
 })();
 </script>
