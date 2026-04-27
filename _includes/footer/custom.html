@@ -1,11 +1,11 @@
 <!-- ============================================================
      Floating 위젯 영역
-     - 우상단: Google Translate 드롭다운
+     - 우상단: 언어 전환 드롭다운 (translate.goog 프록시)
      - 우측: 친구 세로 배너 (데스크탑, ≥ 1024px)
      - 우하단: 친구 floating 카드 (태블릿 이하, < 1024px)
      ============================================================ -->
 
-<!-- ===== 언어 전환 (우상단) — translate.goog 프록시 방식 ===== -->
+<!-- ===== 언어 전환 (우상단) ===== -->
 <div id="lang-switcher" class="lang-switcher" aria-label="Language">
   <button class="lang-switcher__btn"
           type="button"
@@ -16,7 +16,7 @@
     <span class="lang-switcher__label">Language</span>
     <i class="fas fa-caret-down" aria-hidden="true"></i>
   </button>
-  <ul id="lang-switcher-menu" class="lang-switcher__menu" role="menu" hidden>
+  <ul id="lang-switcher-menu" class="lang-switcher__menu" role="menu">
     <li role="none"><a href="#" data-lang="ko" role="menuitem">한국어 (원문)</a></li>
     <li role="none"><a href="#" data-lang="en" role="menuitem">English</a></li>
     <li role="none"><a href="#" data-lang="ja" role="menuitem">日本語</a></li>
@@ -29,8 +29,70 @@
   </ul>
 </div>
 
+<!-- 언어 전환 스크립트 — 어떤 데이터 의존성도 없이 항상 실행 -->
+<script>
+(function() {
+  var ORIGIN_HOST = 'taeyoungphys.github.io';
+  var sw = document.getElementById('lang-switcher');
+  if (!sw) return;
+  var swBtn  = sw.querySelector('.lang-switcher__btn');
+  var swMenu = sw.querySelector('.lang-switcher__menu');
+  if (!swBtn || !swMenu) return;
+
+  function closeMenu() {
+    swBtn.setAttribute('aria-expanded', 'false');
+    sw.classList.remove('is-open');
+  }
+  function openMenu() {
+    swBtn.setAttribute('aria-expanded', 'true');
+    sw.classList.add('is-open');
+  }
+
+  swBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (sw.classList.contains('is-open')) closeMenu(); else openMenu();
+  });
+  document.addEventListener('click', function(e) {
+    if (!sw.contains(e.target)) closeMenu();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  swMenu.addEventListener('click', function(e) {
+    var a = e.target.closest('a[data-lang]');
+    if (!a) return;
+    e.preventDefault();
+    e.stopPropagation();
+    translateTo(a.getAttribute('data-lang'));
+  });
+
+  function translateTo(lang) {
+    // 기존 _x_tr_* 파라미터 제거
+    var params = new URLSearchParams(location.search);
+    ['_x_tr_sl','_x_tr_tl','_x_tr_hl','_x_tr_pto','_x_tr_hist'].forEach(function(p){
+      params.delete(p);
+    });
+    var host;
+    if (lang === 'ko') {
+      host = ORIGIN_HOST;
+    } else {
+      host = ORIGIN_HOST.replace(/\./g, '-') + '.translate.goog';
+      params.set('_x_tr_sl', 'ko');
+      params.set('_x_tr_tl', lang);
+      params.set('_x_tr_hl', lang);
+    }
+    var search = params.toString();
+    var url = 'https://' + host + location.pathname +
+              (search ? '?' + search : '') + location.hash;
+    location.href = url;
+  }
+})();
+</script>
+
 {% if site.data.friends %}
-<!-- ===== 데스크탑: 우측 세로 배너 (C안) ===== -->
+<!-- ===== 데스크탑: 우측 세로 배너 ===== -->
 <aside id="friends-banner"
        class="friends-banner"
        aria-label="팔로우 친구 목록">
@@ -68,7 +130,7 @@
   </div>
 </aside>
 
-<!-- ===== 모바일/태블릿: 우하단 floating 토글 카드 (기존 방식) ===== -->
+<!-- ===== 모바일/태블릿: 우하단 floating 토글 카드 ===== -->
 <div id="friends-widget" class="friends-widget collapsed" aria-live="polite">
   <button class="friends-widget__toggle"
           type="button"
@@ -115,63 +177,6 @@
         collapseBtn.setAttribute('aria-expanded', String(!expanded));
         banner.classList.toggle('is-collapsed', expanded);
       });
-    }
-  }
-
-  // ----- 언어 전환 (translate.goog 프록시) -----
-  var sw = document.getElementById('lang-switcher');
-  if (sw) {
-    var swBtn  = sw.querySelector('.lang-switcher__btn');
-    var swMenu = sw.querySelector('.lang-switcher__menu');
-    var ORIGIN_HOST = 'taeyoungphys.github.io';
-
-    function closeSwMenu() {
-      swBtn.setAttribute('aria-expanded', 'false');
-      swMenu.setAttribute('hidden', '');
-    }
-    function openSwMenu() {
-      swBtn.setAttribute('aria-expanded', 'true');
-      swMenu.removeAttribute('hidden');
-    }
-    swBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var open = swBtn.getAttribute('aria-expanded') === 'true';
-      if (open) closeSwMenu(); else openSwMenu();
-    });
-    document.addEventListener('click', function(e) {
-      if (!sw.contains(e.target)) closeSwMenu();
-    });
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeSwMenu();
-    });
-
-    swMenu.addEventListener('click', function(e) {
-      var a = e.target.closest('a[data-lang]');
-      if (!a) return;
-      e.preventDefault();
-      var lang = a.getAttribute('data-lang');
-      translateTo(lang);
-    });
-
-    function translateTo(lang) {
-      // 기존 _x_tr_* 파라미터 제거
-      var params = new URLSearchParams(location.search);
-      ['_x_tr_sl','_x_tr_tl','_x_tr_hl','_x_tr_pto','_x_tr_hist'].forEach(function(p){
-        params.delete(p);
-      });
-      var host;
-      if (lang === 'ko') {
-        host = ORIGIN_HOST;
-      } else {
-        host = ORIGIN_HOST.replace(/\./g, '-') + '.translate.goog';
-        params.set('_x_tr_sl', 'ko');
-        params.set('_x_tr_tl', lang);
-        params.set('_x_tr_hl', lang);
-      }
-      var search = params.toString();
-      var url = 'https://' + host + location.pathname +
-                (search ? '?' + search : '') + location.hash;
-      location.href = url;
     }
   }
 

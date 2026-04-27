@@ -13,6 +13,11 @@ search: true
 locale: "ko-KR"
 logo: "/assets/images/logo.svg"
 
+# 링크 미리보기 (Open Graph / Twitter Card)
+og_image: "/assets/images/og-image.png"
+twitter:
+  username: "taeyoungphys"
+
 # ============================================================
 # 빌드 설정
 # ============================================================
