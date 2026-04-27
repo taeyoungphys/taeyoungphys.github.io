@@ -10,5 +10,6 @@ Extra content beyond the main posts and series.
 ## Mini-games
 
 - [Gomoku](/playground/omok/)
+- [Sudoku](/playground/sudoku/)
 
 *More games will be added.*

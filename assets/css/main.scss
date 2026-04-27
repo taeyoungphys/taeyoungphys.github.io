@@ -116,60 +116,63 @@ table th {
 }
 
 /* ============================================================
-   Floating Google Translate (우상단)
+   언어 전환 드롭다운 (우상단) — translate.goog 프록시
    ============================================================ */
-.gtranslate-float {
+.lang-switcher {
   position: fixed;
   top: 0.6rem;
   right: 1rem;
   z-index: 10000;
+  font-family: inherit;
+}
+.lang-switcher__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: rgba(30, 30, 40, 0.85);
-  padding: 0.25rem 0.45rem;
+  color: #eee;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85em;
   border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.lang-switcher__btn:hover { background: rgba(50,55,65,0.95); }
+.lang-switcher__btn .fa-caret-down { font-size: 0.85em; opacity: 0.7; }
 
-  /* Google Translate 내부 요소 톤다운 */
-  .goog-te-gadget {
-    font-family: inherit !important;
-    color: #ddd !important;
-    font-size: 0.8em !important;
-  }
-  .goog-te-gadget-simple {
-    background: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    padding: 0.15rem 0.4rem !important;
-    border-radius: 0.3rem !important;
-    line-height: 1.4 !important;
-  }
-  .goog-te-gadget-simple .goog-te-menu-value {
-    color: #eee !important;
-  }
-  .goog-te-gadget-simple .goog-te-menu-value span {
-    color: #eee !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-  }
-  img.goog-te-gadget-icon { display: none !important; }
+.lang-switcher__menu {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0.35rem 0;
+  position: absolute;
+  right: 0;
+  min-width: 170px;
+  background: rgba(25, 28, 36, 0.97);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 0.5rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 0.88em;
+}
+.lang-switcher__menu li { margin: 0; }
+.lang-switcher__menu a {
+  display: block;
+  padding: 0.45rem 0.85rem;
+  color: #e2e6ee;
+  text-decoration: none;
+}
+.lang-switcher__menu a:hover {
+  background: rgba(70, 130, 230, 0.18);
+  color: #fff;
 }
 
-/* Google Translate가 body 상단에 강제로 붙이는 배너 iframe만 숨김.
-   주의: goog-te-menu-frame 은 *언어 선택 드롭다운 메뉴*의 iframe 이므로
-   숨기면 안 됨 (드롭다운이 보이지 않게 됨). banner-frame 만 숨긴다. */
-iframe.goog-te-banner-frame,
-body > .skiptranslate { display: none !important; }
-body { top: 0 !important; position: static !important; }
-
-/* 위젯 본체(#google_translate_element 안)는 반드시 보이도록 강제 */
-#google_translate_element .skiptranslate { display: inline-block !important; }
-#google_translate_element .goog-te-gadget { display: inline-block !important; }
-
 @media (max-width: 600px) {
-  .gtranslate-float {
-    top: 0.4rem;
-    right: 0.5rem;
-    padding: 0.2rem 0.35rem;
-  }
+  .lang-switcher { top: 0.4rem; right: 0.5rem; }
+  .lang-switcher__btn { padding: 0.3rem 0.55rem; font-size: 0.8em; }
 }
 
 /* ============================================================

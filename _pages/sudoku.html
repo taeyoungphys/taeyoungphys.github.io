@@ -1,0 +1,945 @@
+---
+title: "Sudoku"
+permalink: /playground/sudoku/
+layout: single
+author_profile: false
+toc: false
+---
+
+<style>
+  .sudoku-app { max-width: 720px; margin: 0 auto; position: relative; }
+  .sudoku-status {
+    padding: 0.55rem 0.85rem; margin: 0 0 0.7rem;
+    background: rgba(59,130,246,0.12);
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px; font-weight: 500; font-size: 0.95rem;
+  }
+  .sudoku-controls {
+    display: flex; flex-wrap: wrap; gap: 0.45rem;
+    align-items: center; margin-bottom: 0.8rem;
+  }
+  .sudoku-controls button {
+    padding: 0.4rem 0.85rem;
+    border: 1px solid #555;
+    background: #1e1e1e; color: #eee;
+    border-radius: 6px; cursor: pointer; font-size: 0.88rem;
+  }
+  .sudoku-controls button:hover { background: #333; }
+  .sudoku-controls button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .sudoku-controls button.active {
+    background: #3b82f6; color: white; border-color: #3b82f6;
+  }
+  .sudoku-info {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    background: rgba(59,130,246,0.1);
+    color: #cfd8e6;
+  }
+  .sudoku-timer {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 600;
+  }
+
+  /* ===== 보드 ===== */
+  .sudoku-main {
+    display: flex; gap: 1rem; align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .sudoku-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 2px;
+    background: #888;
+    width: 100%; max-width: 480px;
+    aspect-ratio: 1;
+    border: 2px solid #888;
+    user-select: none;
+  }
+  .sudoku-board .box {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    background: #1e1e1e;
+  }
+  .sudoku-board .cell {
+    border: 1px solid #444;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6ab0ff;
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    transition: background 0.05s linear;
+  }
+  .sudoku-board .cell.given { color: #ececec; font-weight: 700; }
+  .sudoku-board .cell.error { color: #ff6b6b !important; }
+  .sudoku-board .cell.peer { background: rgba(255,255,255,0.045); }
+  .sudoku-board .cell.same-num { background: rgba(99,154,235,0.18); }
+  .sudoku-board .cell.selected { background: rgba(99,154,235,0.42) !important; }
+  .sudoku-board .cell .cell-value { z-index: 1; }
+  .sudoku-board .cell .cell-memo {
+    position: absolute; inset: 4%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    pointer-events: none;
+    font-size: 0.5em;
+    line-height: 1;
+    color: #b0b0b0;
+  }
+  .sudoku-board .cell .cell-memo span {
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sudoku-board .cell.has-value .cell-memo { display: none; }
+
+  /* ===== 우측 사이드: 숫자 패드 + 단축키 ===== */
+  .sudoku-side {
+    display: flex; flex-direction: column; gap: 0.8rem;
+    flex: 1; min-width: 200px;
+  }
+  .sudoku-numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+  .sudoku-numpad button {
+    padding: 0.55rem 0;
+    background: #2a2a2a; color: #eee;
+    border: 1px solid #555;
+    border-radius: 6px;
+    font-size: 1.15rem; font-weight: 600;
+    cursor: pointer;
+  }
+  .sudoku-numpad button:hover { background: #3a3a3a; }
+  .sudoku-numpad button.complete { opacity: 0.35; }
+
+  .sudoku-shortcuts {
+    font-size: 0.78rem;
+    background: rgba(0,0,0,0.22);
+    border-radius: 4px;
+    padding: 0.55rem 0.7rem;
+    line-height: 1.7;
+  }
+  .sudoku-shortcuts .key {
+    display: inline-block;
+    background: #333; color: #ddd;
+    padding: 1px 6px; border-radius: 3px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    border: 1px solid #555;
+    margin-right: 0.25rem;
+  }
+
+  /* ===== 오버레이 (시작/생성/승리) ===== */
+  .sudoku-overlay {
+    position: absolute; inset: 0;
+    background: rgba(15,15,15,0.94);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 2rem;
+    border-radius: 6px;
+  }
+  .sudoku-card {
+    background: #1c1c1c;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 1.6rem 1.8rem;
+    width: 380px; max-width: 92%;
+    color: #eee;
+  }
+  .sudoku-card h2 { margin: 0 0 0.3rem; font-size: 1.4rem; }
+  .start-sub { margin: 0 0 1.1rem; opacity: 0.75; font-size: 0.9rem; }
+  .start-opt-group { margin-bottom: 1.1rem; }
+  .start-opt-label {
+    font-size: 0.78rem; text-transform: uppercase;
+    letter-spacing: 0.05em; opacity: 0.6;
+    margin-bottom: 0.4rem;
+  }
+  .start-opt-radios { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+  .start-opt-radios label {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    cursor: pointer; user-select: none; font-size: 0.92rem;
+  }
+  .start-btn-primary {
+    width: 100%;
+    padding: 0.65rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-top: 0.4rem;
+  }
+  .start-btn-primary:hover { background: #2563eb; }
+
+  .sudoku-card progress {
+    width: 100%; height: 12px;
+    margin: 0.5rem 0 0.3rem;
+  }
+  .sudoku-progress-text {
+    font-size: 0.85rem; opacity: 0.8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .sudoku-card .win-time {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.3rem; font-weight: 600; color: #4f9bff;
+    margin: 0.4rem 0 1rem;
+  }
+
+  /* ===== 풀이가능 메시지 ===== */
+  .sudoku-check-msg {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.92rem;
+    display: none;
+  }
+  .sudoku-check-msg.ok      { display: block; background: rgba(34,197,94,0.18); border-left: 3px solid #22c55e; }
+  .sudoku-check-msg.error   { display: block; background: rgba(220,38,38,0.18); border-left: 3px solid #dc2626; }
+  .sudoku-check-msg.warn    { display: block; background: rgba(234,179,8,0.18);  border-left: 3px solid #eab308; }
+</style>
+
+<div class="sudoku-app">
+
+  <div class="sudoku-status" id="sudoku-status"></div>
+
+  <div class="sudoku-controls">
+    <span class="sudoku-info" id="sudoku-diff-info"></span>
+    <span class="sudoku-info"><i>⏱</i> <span class="sudoku-timer" id="sudoku-timer">00:00</span></span>
+    <button id="sudoku-mode" type="button"></button>
+    <button id="sudoku-erase" type="button" data-i18n="erase"></button>
+    <button id="sudoku-check" type="button" data-i18n="check"></button>
+    <button id="sudoku-newpuzzle" type="button" data-i18n="newPuzzle"></button>
+    <button id="sudoku-settings" type="button" data-i18n="settings"></button>
+  </div>
+
+  <div class="sudoku-main">
+    <div class="sudoku-board" id="sudoku-board"></div>
+
+    <div class="sudoku-side">
+      <div class="sudoku-numpad" id="sudoku-numpad">
+        <button data-num="1">1</button>
+        <button data-num="2">2</button>
+        <button data-num="3">3</button>
+        <button data-num="4">4</button>
+        <button data-num="5">5</button>
+        <button data-num="6">6</button>
+        <button data-num="7">7</button>
+        <button data-num="8">8</button>
+        <button data-num="9">9</button>
+      </div>
+
+      <div class="sudoku-shortcuts" id="sudoku-shortcuts"></div>
+
+      <div class="sudoku-check-msg" id="sudoku-check-msg"></div>
+    </div>
+  </div>
+
+  <!-- ===== Start overlay ===== -->
+  <div class="sudoku-overlay" id="sudoku-start">
+    <div class="sudoku-card">
+      <h2 data-i18n="startTitle"></h2>
+      <p class="start-sub" data-i18n="startSubtitle"></p>
+
+      <div class="start-opt-group">
+        <div class="start-opt-label" data-i18n="diffLabel"></div>
+        <div class="start-opt-radios">
+          <label><input type="radio" name="diff" value="easy" checked>   <span data-i18n="diffEasy"></span></label>
+          <label><input type="radio" name="diff" value="medium">         <span data-i18n="diffMedium"></span></label>
+          <label><input type="radio" name="diff" value="hard">           <span data-i18n="diffHard"></span></label>
+          <label><input type="radio" name="diff" value="expert">         <span data-i18n="diffExpert"></span></label>
+        </div>
+      </div>
+
+      <div class="start-opt-group">
+        <div class="start-opt-label" data-i18n="langLabel"></div>
+        <div class="start-opt-radios">
+          <label><input type="radio" name="lang" value="ko" checked> 한국어</label>
+          <label><input type="radio" name="lang" value="en"> English</label>
+        </div>
+      </div>
+
+      <button id="start-btn" class="start-btn-primary" data-i18n="startBtn"></button>
+    </div>
+  </div>
+
+  <!-- ===== Loading overlay (puzzle generation) ===== -->
+  <div class="sudoku-overlay" id="sudoku-loading" style="display:none">
+    <div class="sudoku-card">
+      <h2 data-i18n="generating"></h2>
+      <progress id="gen-progress" max="100" value="0"></progress>
+      <div class="sudoku-progress-text" id="gen-progress-text">0 / 0</div>
+    </div>
+  </div>
+
+  <!-- ===== Win overlay ===== -->
+  <div class="sudoku-overlay" id="sudoku-win" style="display:none">
+    <div class="sudoku-card">
+      <h2>🎉 <span data-i18n="winTitle"></span></h2>
+      <p class="start-sub" data-i18n="winSub"></p>
+      <div class="win-time" id="win-time">00:00</div>
+      <button id="win-newpuzzle" class="start-btn-primary" data-i18n="newPuzzle"></button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  // ============================================================
+  // i18n
+  // ============================================================
+  const I18N = {
+    ko: {
+      startTitle: '스도쿠 (Sudoku)',
+      startSubtitle: '난이도와 언어를 선택하세요',
+      diffLabel: '난이도',
+      diffEasy: 'Easy',
+      diffMedium: 'Medium',
+      diffHard: 'Hard',
+      diffExpert: 'Expert',
+      langLabel: '언어 / Language',
+      startBtn: '게임 시작',
+      generating: '퍼즐 생성 중...',
+      modeInput: '입력 모드',
+      modeMemo: '메모 모드',
+      erase: '지우기',
+      check: '풀이 가능?',
+      newPuzzle: '새 퍼즐',
+      settings: '설정',
+      diffPrefix: '난이도: ',
+      cluesSuffix: '개 단서',
+      statusPlaying: '플레이 중',
+      statusGenerating: '퍼즐 생성 중...',
+      checkOk: '✓ 유일한 해가 존재합니다 (정상)',
+      checkNoSol: '✗ 답이 존재하지 않습니다. 입력에 모순이 있어요.',
+      checkMulti: '⚠ 여러 해가 존재합니다.',
+      winTitle: '해결 완료!',
+      winSub: '소요 시간',
+      confirmAbandon: '진행 중인 게임을 포기하고 설정 화면으로 돌아갈까요?',
+      shortcutHeader: '단축키',
+      kIns:  '숫자 입력',
+      kMode: '입력/메모 전환',
+      kMove: '셀 이동',
+      kErase:'지우기'
+    },
+    en: {
+      startTitle: 'Sudoku',
+      startSubtitle: 'Choose difficulty and language',
+      diffLabel: 'Difficulty',
+      diffEasy: 'Easy',
+      diffMedium: 'Medium',
+      diffHard: 'Hard',
+      diffExpert: 'Expert',
+      langLabel: 'Language',
+      startBtn: 'Start',
+      generating: 'Generating puzzle...',
+      modeInput: 'Input mode',
+      modeMemo: 'Memo mode',
+      erase: 'Erase',
+      check: 'Solvable?',
+      newPuzzle: 'New puzzle',
+      settings: 'Settings',
+      diffPrefix: 'Difficulty: ',
+      cluesSuffix: ' clues',
+      statusPlaying: 'Playing',
+      statusGenerating: 'Generating puzzle...',
+      checkOk: '✓ Unique solution exists.',
+      checkNoSol: '✗ No solution. Your input contradicts the puzzle.',
+      checkMulti: '⚠ Multiple solutions exist.',
+      winTitle: 'Solved!',
+      winSub: 'Time',
+      confirmAbandon: 'Abandon current game and return to settings?',
+      shortcutHeader: 'Shortcuts',
+      kIns:  'Insert digit',
+      kMode: 'Toggle input / memo',
+      kMove: 'Move cell',
+      kErase:'Erase'
+    }
+  };
+
+  let currentLang = 'ko';
+  const t = (k) => (I18N[currentLang][k] !== undefined ? I18N[currentLang][k] : k);
+
+  // ============================================================
+  // Sudoku core (solve, count, generate)
+  // ============================================================
+  function emptyBoard() {
+    return Array.from({length: 9}, () => Array(9).fill(0));
+  }
+  function copyBoard(b) { return b.map(row => row.slice()); }
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function isValid(board, r, c, num) {
+    for (let i = 0; i < 9; i++) {
+      if (board[r][i] === num) return false;
+      if (board[i][c] === num) return false;
+    }
+    const br = 3 * Math.floor(r / 3);
+    const bc = 3 * Math.floor(c / 3);
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board[br + i][bc + j] === num) return false;
+      }
+    }
+    return true;
+  }
+
+  // MRV: 가장 후보가 적은 빈 칸을 먼저 선택 → 백트래킹 가지치기 강력
+  function findMRVEmpty(board) {
+    let best = null, bestCount = 10;
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (board[r][c] !== 0) continue;
+        const cands = [];
+        for (let n = 1; n <= 9; n++) if (isValid(board, r, c, n)) cands.push(n);
+        if (cands.length < bestCount) {
+          bestCount = cands.length;
+          best = { r, c, cands };
+          if (bestCount <= 1) return best; // 0=dead end, 1=forced — 즉시 반환
+        }
+      }
+    }
+    return best;
+  }
+
+  function solve(board, randomize) {
+    const e = findMRVEmpty(board);
+    if (!e) return true;
+    if (e.cands.length === 0) return false;
+    const ns = randomize ? shuffle(e.cands.slice()) : e.cands;
+    for (const n of ns) {
+      board[e.r][e.c] = n;
+      if (solve(board, randomize)) return true;
+      board[e.r][e.c] = 0;
+    }
+    return false;
+  }
+
+  // 해의 개수를 limit까지만 셈 (그 후 조기 종료)
+  function countSolutions(board, limit) {
+    let count = 0;
+    function helper() {
+      if (count >= limit) return;
+      const e = findMRVEmpty(board);
+      if (!e) { count++; return; }
+      if (e.cands.length === 0) return;
+      for (const n of e.cands) {
+        board[e.r][e.c] = n;
+        helper();
+        board[e.r][e.c] = 0;
+        if (count >= limit) return;
+      }
+    }
+    helper();
+    return count;
+  }
+
+  // Async generator with progress callback
+  async function generatePuzzle(targetClues, onProgress) {
+    const board = emptyBoard();
+    // Diagonal boxes (independent → no conflict)
+    for (let bi = 0; bi < 9; bi += 3) {
+      const nums = shuffle([1,2,3,4,5,6,7,8,9]);
+      let k = 0;
+      for (let i = 0; i < 3; i++)
+        for (let j = 0; j < 3; j++)
+          board[bi + i][bi + j] = nums[k++];
+    }
+    solve(board, true);
+    const solution = copyBoard(board);
+
+    const cellOrder = shuffle(Array.from({length: 81}, (_, i) => i));
+    let cluesLeft = 81;
+    let processed = 0;
+    const target = 81 - targetClues;
+
+    for (const idx of cellOrder) {
+      if (cluesLeft <= targetClues) break;
+      processed++;
+
+      // Yield to UI every 3 attempts
+      if (processed % 3 === 0) {
+        if (onProgress) onProgress(Math.min(81 - cluesLeft, target), target);
+        await new Promise(r => setTimeout(r, 0));
+      }
+
+      const r = Math.floor(idx / 9), c = idx % 9;
+      const saved = board[r][c];
+      board[r][c] = 0;
+      const sols = countSolutions(board, 2);
+      if (sols !== 1) board[r][c] = saved;
+      else cluesLeft--;
+    }
+    if (onProgress) onProgress(target, target);
+    return { puzzle: board, solution: solution, clues: cluesLeft };
+  }
+
+  // ============================================================
+  // Game state
+  // ============================================================
+  const DIFFICULTY_CLUES = {
+    easy: 40,
+    medium: 32,
+    hard: 27,
+    expert: 23
+  };
+
+  let puzzle = null;     // 9x9 — given digits (0 = empty, set once)
+  let solution = null;   // 9x9 — full solution
+  let board = null;      // 9x9 — current state (puzzle ∪ user input)
+  let memos = null;      // 9x9 — array of Set<int> per cell
+  let selected = null;   // {r, c}
+  let mode = 'input';    // 'input' | 'memo'
+  let difficulty = 'easy';
+  let timerStart = 0;
+  let timerInterval = null;
+  let elapsedSec = 0;
+  let won = false;
+
+  // ============================================================
+  // DOM refs
+  // ============================================================
+  const boardEl = document.getElementById('sudoku-board');
+  const statusEl = document.getElementById('sudoku-status');
+  const diffInfoEl = document.getElementById('sudoku-diff-info');
+  const timerEl = document.getElementById('sudoku-timer');
+  const modeBtn = document.getElementById('sudoku-mode');
+  const eraseBtn = document.getElementById('sudoku-erase');
+  const checkBtn = document.getElementById('sudoku-check');
+  const newBtn = document.getElementById('sudoku-newpuzzle');
+  const settingsBtn = document.getElementById('sudoku-settings');
+  const numpadEl = document.getElementById('sudoku-numpad');
+  const shortcutsEl = document.getElementById('sudoku-shortcuts');
+  const checkMsgEl = document.getElementById('sudoku-check-msg');
+  const startOverlay = document.getElementById('sudoku-start');
+  const startBtn = document.getElementById('start-btn');
+  const loadingOverlay = document.getElementById('sudoku-loading');
+  const genProgress = document.getElementById('gen-progress');
+  const genProgressText = document.getElementById('gen-progress-text');
+  const winOverlay = document.getElementById('sudoku-win');
+  const winNewBtn = document.getElementById('win-newpuzzle');
+  const winTimeEl = document.getElementById('win-time');
+
+  const cells = [];   // flat list of cell DOM, indexed by r*9+c
+  const valueSpans = [];
+  const memoDivs = [];
+
+  // ============================================================
+  // Build board DOM (once)
+  // ============================================================
+  (function buildBoard() {
+    boardEl.innerHTML = '';
+    // 9 boxes
+    for (let bi = 0; bi < 9; bi++) {
+      const box = document.createElement('div');
+      box.className = 'box';
+      const br = 3 * Math.floor(bi / 3);
+      const bc = 3 * (bi % 3);
+      for (let ci = 0; ci < 9; ci++) {
+        const r = br + Math.floor(ci / 3);
+        const c = bc + (ci % 3);
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+
+        const valSpan = document.createElement('span');
+        valSpan.className = 'cell-value';
+        cell.appendChild(valSpan);
+
+        const memoDiv = document.createElement('div');
+        memoDiv.className = 'cell-memo';
+        for (let m = 1; m <= 9; m++) {
+          const ms = document.createElement('span');
+          ms.dataset.n = m;
+          ms.textContent = '';
+          memoDiv.appendChild(ms);
+        }
+        cell.appendChild(memoDiv);
+
+        cells[r * 9 + c] = cell;
+        valueSpans[r * 9 + c] = valSpan;
+        memoDivs[r * 9 + c] = memoDiv;
+        box.appendChild(cell);
+      }
+      boardEl.appendChild(box);
+    }
+
+    boardEl.addEventListener('click', (e) => {
+      const cell = e.target.closest('.cell');
+      if (!cell) return;
+      const r = parseInt(cell.dataset.r, 10);
+      const c = parseInt(cell.dataset.c, 10);
+      selectCell(r, c);
+    });
+  })();
+
+  function getCell(r, c) { return cells[r * 9 + c]; }
+
+  // ============================================================
+  // Render
+  // ============================================================
+  function render() {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const idx = r * 9 + c;
+        const cell = cells[idx];
+        const val = board[r][c];
+        const isGiven = puzzle[r][c] !== 0;
+        cell.classList.toggle('given', isGiven);
+        cell.classList.toggle('has-value', val !== 0);
+        valueSpans[idx].textContent = val === 0 ? '' : String(val);
+
+        // memos
+        const memoSet = memos[r][c];
+        const memoSpans = memoDivs[idx].children;
+        for (let m = 1; m <= 9; m++) {
+          memoSpans[m - 1].textContent = (val === 0 && memoSet.has(m)) ? String(m) : '';
+        }
+
+        // Error: user input that violates constraint OR mismatches solution
+        cell.classList.remove('error');
+        if (!isGiven && val !== 0) {
+          if (!isLegal(board, r, c, val) || (solution && val !== solution[r][c])) {
+            cell.classList.add('error');
+          }
+        }
+
+        cell.classList.remove('peer', 'same-num', 'selected');
+      }
+    }
+
+    // Selection highlight
+    if (selected) {
+      const { r: sr, c: sc } = selected;
+      const sel = getCell(sr, sc);
+      sel.classList.add('selected');
+      const selVal = board[sr][sc];
+      const sbr = 3 * Math.floor(sr / 3), sbc = 3 * Math.floor(sc / 3);
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (r === sr && c === sc) continue;
+          const inRow = r === sr;
+          const inCol = c === sc;
+          const inBox = (Math.floor(r / 3) === sbr / 3) && (Math.floor(c / 3) === sbc / 3);
+          if (inRow || inCol || inBox) getCell(r, c).classList.add('peer');
+          if (selVal !== 0 && board[r][c] === selVal) getCell(r, c).classList.add('same-num');
+        }
+      }
+    }
+
+    // Mode button
+    modeBtn.textContent = mode === 'input' ? t('modeInput') : t('modeMemo');
+    modeBtn.classList.toggle('active', mode === 'memo');
+
+    // Numpad: dim buttons whose digit is "complete" (all 9 placed correctly)
+    const counts = Array(10).fill(0);
+    for (let r = 0; r < 9; r++)
+      for (let c = 0; c < 9; c++)
+        if (board[r][c] !== 0) counts[board[r][c]]++;
+    Array.from(numpadEl.children).forEach(btn => {
+      const n = parseInt(btn.dataset.num, 10);
+      btn.classList.toggle('complete', counts[n] >= 9);
+    });
+
+    diffInfoEl.textContent = t('diffPrefix') + capitalize(difficulty);
+  }
+
+  function capitalize(s) { return s ? s[0].toUpperCase() + s.slice(1) : s; }
+
+  // Check if value at (r,c) is legal (ignores the cell itself)
+  function isLegal(b, r, c, num) {
+    for (let i = 0; i < 9; i++) {
+      if (i !== c && b[r][i] === num) return false;
+      if (i !== r && b[i][c] === num) return false;
+    }
+    const br = 3 * Math.floor(r / 3);
+    const bc = 3 * Math.floor(c / 3);
+    for (let i = 0; i < 3; i++)
+      for (let j = 0; j < 3; j++) {
+        const rr = br + i, cc = bc + j;
+        if ((rr !== r || cc !== c) && b[rr][cc] === num) return false;
+      }
+    return true;
+  }
+
+  // ============================================================
+  // Actions
+  // ============================================================
+  function selectCell(r, c) {
+    if (won) return;
+    selected = { r, c };
+    render();
+  }
+
+  function moveSelection(dr, dc) {
+    if (!selected) { selected = { r: 0, c: 0 }; render(); return; }
+    let r = selected.r + dr, c = selected.c + dc;
+    if (r < 0) r = 8; if (r > 8) r = 0;
+    if (c < 0) c = 8; if (c > 8) c = 0;
+    selected = { r, c };
+    render();
+  }
+
+  function inputDigit(n) {
+    if (won || !selected) return;
+    const { r, c } = selected;
+    if (puzzle[r][c] !== 0) return;     // protected given
+    if (mode === 'input') {
+      if (board[r][c] === n) {
+        board[r][c] = 0;                // toggle off
+      } else {
+        board[r][c] = n;
+        memos[r][c].clear();
+        // Auto-clear matching memos in row/col/box
+        clearPeerMemos(r, c, n);
+      }
+    } else {
+      // memo mode
+      if (board[r][c] !== 0) board[r][c] = 0;
+      const set = memos[r][c];
+      if (set.has(n)) set.delete(n); else set.add(n);
+    }
+    hideCheckMsg();
+    render();
+    checkWin();
+  }
+
+  function clearPeerMemos(r, c, n) {
+    const br = 3 * Math.floor(r / 3), bc = 3 * Math.floor(c / 3);
+    for (let i = 0; i < 9; i++) {
+      memos[r][i].delete(n);
+      memos[i][c].delete(n);
+    }
+    for (let i = 0; i < 3; i++)
+      for (let j = 0; j < 3; j++)
+        memos[br + i][bc + j].delete(n);
+  }
+
+  function eraseSelected() {
+    if (won || !selected) return;
+    const { r, c } = selected;
+    if (puzzle[r][c] !== 0) return;
+    board[r][c] = 0;
+    memos[r][c].clear();
+    hideCheckMsg();
+    render();
+  }
+
+  function checkSolvable() {
+    // Run countSolutions on a copy of current board
+    const work = copyBoard(board);
+    const sols = countSolutions(work, 2);
+    if (sols === 0) showCheckMsg(t('checkNoSol'), 'error');
+    else if (sols === 1) showCheckMsg(t('checkOk'), 'ok');
+    else showCheckMsg(t('checkMulti'), 'warn');
+  }
+
+  function showCheckMsg(text, kind) {
+    checkMsgEl.textContent = text;
+    checkMsgEl.className = 'sudoku-check-msg ' + kind;
+  }
+  function hideCheckMsg() {
+    checkMsgEl.className = 'sudoku-check-msg';
+    checkMsgEl.textContent = '';
+  }
+
+  function checkWin() {
+    if (!solution) return;
+    for (let r = 0; r < 9; r++)
+      for (let c = 0; c < 9; c++)
+        if (board[r][c] !== solution[r][c]) return;
+    // Won
+    won = true;
+    stopTimer();
+    setTimeout(() => {
+      winTimeEl.textContent = formatTime(elapsedSec);
+      winOverlay.style.display = 'flex';
+    }, 200);
+  }
+
+  // ============================================================
+  // Timer
+  // ============================================================
+  function startTimer() {
+    timerStart = Date.now();
+    elapsedSec = 0;
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 500);
+  }
+  function stopTimer() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  }
+  function updateTimer() {
+    elapsedSec = Math.floor((Date.now() - timerStart) / 1000);
+    timerEl.textContent = formatTime(elapsedSec);
+  }
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const ss = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+  }
+
+  // ============================================================
+  // Setup new game
+  // ============================================================
+  async function startNewPuzzle() {
+    won = false;
+    stopTimer();
+    hideCheckMsg();
+    statusEl.textContent = t('statusGenerating');
+
+    // Show loading overlay
+    startOverlay.style.display = 'none';
+    winOverlay.style.display = 'none';
+    loadingOverlay.style.display = 'flex';
+
+    const target = DIFFICULTY_CLUES[difficulty];
+    genProgress.value = 0;
+    genProgressText.textContent = '0 / ' + (81 - target);
+
+    const result = await generatePuzzle(target, (cur, total) => {
+      const pct = total ? (cur / total) * 100 : 100;
+      genProgress.value = pct;
+      genProgressText.textContent = cur + ' / ' + total;
+    });
+
+    puzzle = copyBoard(result.puzzle);
+    solution = copyBoard(result.solution);
+    board = copyBoard(result.puzzle);
+    memos = Array.from({length: 9}, () => Array.from({length: 9}, () => new Set()));
+    selected = null;
+    mode = 'input';
+    statusEl.textContent = t('statusPlaying');
+
+    startTimer();
+    loadingOverlay.style.display = 'none';
+    render();
+  }
+
+  function applyLang() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      el.textContent = t(k);
+    });
+    renderShortcuts();
+    if (puzzle) {
+      statusEl.textContent = won ? t('statusPlaying') : t('statusPlaying');
+      diffInfoEl.textContent = t('diffPrefix') + capitalize(difficulty);
+      modeBtn.textContent = mode === 'input' ? t('modeInput') : t('modeMemo');
+    } else {
+      statusEl.textContent = t('startTitle');
+    }
+  }
+
+  function renderShortcuts() {
+    shortcutsEl.innerHTML =
+      '<div style="font-weight:600;margin-bottom:0.3rem;opacity:0.85">' + t('shortcutHeader') + '</div>' +
+      '<div><span class="key">1-9</span>' + t('kIns') + '</div>' +
+      '<div><span class="key">M</span>' + t('kMode') + '</div>' +
+      '<div><span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span>' + t('kMove') + '</div>' +
+      '<div><span class="key">⌫</span> / <span class="key">Del</span>' + t('kErase') + '</div>';
+  }
+
+  function showStart() {
+    // preselect current values
+    const dr = document.querySelector('input[name="diff"][value="' + difficulty + '"]');
+    if (dr) dr.checked = true;
+    const lr = document.querySelector('input[name="lang"][value="' + currentLang + '"]');
+    if (lr) lr.checked = true;
+    applyLang();
+    startOverlay.style.display = 'flex';
+    winOverlay.style.display = 'none';
+    loadingOverlay.style.display = 'none';
+  }
+
+  // ============================================================
+  // Event handlers
+  // ============================================================
+  modeBtn.addEventListener('click', () => {
+    mode = (mode === 'input') ? 'memo' : 'input';
+    render();
+  });
+  eraseBtn.addEventListener('click', eraseSelected);
+  checkBtn.addEventListener('click', checkSolvable);
+  newBtn.addEventListener('click', () => { startNewPuzzle(); });
+  winNewBtn.addEventListener('click', () => { startNewPuzzle(); });
+
+  settingsBtn.addEventListener('click', () => {
+    if (puzzle && !won) {
+      if (!confirm(t('confirmAbandon'))) return;
+    }
+    stopTimer();
+    showStart();
+  });
+
+  numpadEl.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-num]');
+    if (!b) return;
+    const n = parseInt(b.dataset.num, 10);
+    inputDigit(n);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    // Don't intercept when overlays are visible (radio interaction etc.)
+    if (startOverlay.style.display !== 'none' ||
+        loadingOverlay.style.display !== 'none' ||
+        winOverlay.style.display !== 'none') {
+      // Allow typing in radios — escape key only special
+      return;
+    }
+    const k = e.key;
+    if (k >= '1' && k <= '9') {
+      inputDigit(parseInt(k, 10));
+      e.preventDefault();
+    } else if (k === 'm' || k === 'M') {
+      mode = (mode === 'input') ? 'memo' : 'input';
+      render();
+      e.preventDefault();
+    } else if (k === 'Backspace' || k === 'Delete' || k === '0') {
+      eraseSelected();
+      e.preventDefault();
+    } else if (k === 'ArrowUp')    { moveSelection(-1,  0); e.preventDefault(); }
+    else if (k === 'ArrowDown')    { moveSelection( 1,  0); e.preventDefault(); }
+    else if (k === 'ArrowLeft')    { moveSelection( 0, -1); e.preventDefault(); }
+    else if (k === 'ArrowRight')   { moveSelection( 0,  1); e.preventDefault(); }
+  });
+
+  // Live update language on radio change in start screen
+  document.querySelectorAll('input[name="lang"]').forEach(r => {
+    r.addEventListener('change', () => {
+      currentLang = r.value;
+      applyLang();
+    });
+  });
+
+  startBtn.addEventListener('click', () => {
+    const dv = document.querySelector('input[name="diff"]:checked').value;
+    const lv = document.querySelector('input[name="lang"]:checked').value;
+    difficulty = dv;
+    currentLang = lv;
+    applyLang();
+    startNewPuzzle();
+  });
+
+  // Initial show
+  applyLang();
+  showStart();
+})();
+</script>

@@ -1,5 +1,28 @@
 <!-- Favicon -->
 <link rel="icon" type="image/svg+xml" href="{{ '/assets/images/favicon.svg' | relative_url }}">
+<link rel="alternate icon" href="{{ '/assets/images/favicon.png' | relative_url }}">
+
+<!-- ============================================================
+     Open Graph / Twitter Card — 링크 미리보기 (KakaoTalk, Slack, X 등)
+     ============================================================ -->
+{% assign og_image = '/assets/images/og-image.png' | absolute_url %}
+{% assign og_title = page.title | default: site.title %}
+{% assign og_desc  = page.excerpt | default: site.description | strip_html | strip_newlines | truncate: 160 %}
+
+<meta property="og:site_name" content="{{ site.title }}">
+<meta property="og:type" content="{% if page.layout == 'single' and page.url contains '/posts/' %}article{% else %}website{% endif %}">
+<meta property="og:title" content="{{ og_title }}">
+<meta property="og:description" content="{{ og_desc }}">
+<meta property="og:image" content="{{ og_image }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="{{ page.url | absolute_url }}">
+<meta property="og:locale" content="ko_KR">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ og_title }}">
+<meta name="twitter:description" content="{{ og_desc }}">
+<meta name="twitter:image" content="{{ og_image }}">
 
 <!-- MathJax 3 — LaTeX 수식 렌더링 -->
 <script>
@@ -15,51 +38,3 @@
   };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
-
-<!-- Google Translate 위젯 초기화 (우상단 floating 버튼) -->
-<script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'ko',
-      includedLanguages: 'en,ja,zh-CN,zh-TW,es,fr,de,ru',
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-      autoDisplay: false
-    }, 'google_translate_element');
-  }
-</script>
-<script type="text/javascript"
-  src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-  async></script>
-
-<!-- Google Translate 기본 라벨("언어 선택" / "Select Language")을 "Language"로 치환 -->
-<script type="text/javascript">
-(function() {
-  function relabel() {
-    var root = document.getElementById('google_translate_element');
-    if (!root) return false;
-    var spans = root.querySelectorAll('.goog-te-menu-value span');
-    var changed = false;
-    for (var i = 0; i < spans.length; i++) {
-      var t = (spans[i].textContent || '').trim();
-      if (t === '언어 선택' || t === 'Select Language') {
-        spans[i].textContent = 'Language';
-        changed = true;
-      }
-    }
-    return changed;
-  }
-  function start() {
-    var tries = 0;
-    var iv = setInterval(function() {
-      tries++;
-      relabel();
-      if (tries > 30) clearInterval(iv); // ~6초 후 중단
-    }, 200);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
-  } else {
-    start();
-  }
-})();
-</script>
