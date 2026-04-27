@@ -5,13 +5,14 @@
      - 우하단: 친구 floating 카드 (태블릿 이하, < 1024px)
      ============================================================ -->
 
-<!-- ===== 언어 전환 (우상단) — <details> 네이티브 토글 사용 ===== -->
-<details id="lang-switcher" class="lang-switcher">
-  <summary class="lang-switcher__btn">
+<!-- ===== 언어 전환 (우상단) — 체크박스 해킹 (순수 CSS 토글, JS 의존 X) ===== -->
+<div id="lang-switcher" class="lang-switcher">
+  <input type="checkbox" id="lang-switcher-toggle" class="lang-switcher__toggle">
+  <label for="lang-switcher-toggle" class="lang-switcher__btn" aria-label="Language">
     <i class="fas fa-globe" aria-hidden="true"></i>
     <span class="lang-switcher__label">Language</span>
-    <i class="fas fa-caret-down" aria-hidden="true"></i>
-  </summary>
+    <i class="fas fa-caret-down lang-switcher__caret" aria-hidden="true"></i>
+  </label>
   <div class="lang-switcher__menu">
     <a href="#" data-lang="ko">한국어 (원문)</a>
     <a href="#" data-lang="en">English</a>
@@ -23,20 +24,22 @@
     <a href="#" data-lang="de">Deutsch</a>
     <a href="#" data-lang="ru">Русский</a>
   </div>
-</details>
+</div>
 
-<!-- 언어 전환 스크립트 — 리다이렉트만 담당. 토글은 <details>가 처리 -->
+<!-- 언어 전환 스크립트 — 리다이렉트 + 외부 클릭으로 닫기만 담당 -->
 <script>
 (function() {
   var ORIGIN_HOST = 'taeyoungphys.github.io';
   var sw = document.getElementById('lang-switcher');
-  if (!sw) return;
+  var toggle = document.getElementById('lang-switcher-toggle');
+  if (!sw || !toggle) return;
 
   // 메뉴 항목 클릭 → 번역 페이지로 이동
   sw.addEventListener('click', function(e) {
     var a = e.target.closest('a[data-lang]');
     if (!a) return;
     e.preventDefault();
+    toggle.checked = false;
     var lang = a.getAttribute('data-lang');
     var params = new URLSearchParams(location.search);
     ['_x_tr_sl','_x_tr_tl','_x_tr_hl','_x_tr_pto','_x_tr_hist'].forEach(function(p) {
@@ -58,7 +61,11 @@
 
   // 외부 클릭 시 메뉴 닫기
   document.addEventListener('click', function(e) {
-    if (!sw.contains(e.target)) sw.removeAttribute('open');
+    if (!sw.contains(e.target)) toggle.checked = false;
+  });
+  // ESC 로 닫기
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') toggle.checked = false;
   });
 })();
 </script>

@@ -116,7 +116,8 @@ table th {
 }
 
 /* ============================================================
-   언어 전환 드롭다운 (우상단) — <details> 네이티브 토글
+   언어 전환 드롭다운 (우상단) — 체크박스 해킹 (순수 CSS 토글)
+   <input> + <label for> + ~ 형제 결합자 → JS 없이 토글
    ============================================================ */
 .lang-switcher {
   position: fixed !important;
@@ -125,10 +126,13 @@ table th {
   z-index: 10000 !important;
   font-family: inherit;
 }
-/* details 의 기본 마커(▶) 제거 */
-.lang-switcher > summary { list-style: none !important; }
-.lang-switcher > summary::-webkit-details-marker { display: none !important; }
-.lang-switcher > summary::marker { display: none !important; content: '' !important; }
+/* 체크박스 자체는 숨김 — 단, hidden 속성 대신 시각적으로만 숨겨야 label 이 동작함 */
+.lang-switcher__toggle {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0);
+}
 
 .lang-switcher__btn {
   display: inline-flex !important;
@@ -146,17 +150,20 @@ table th {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   line-height: 1.4;
   user-select: none;
+  margin: 0 !important;
 }
 .lang-switcher__btn:hover { background: rgba(50,55,65,0.95); }
-.lang-switcher__btn .fa-caret-down {
+.lang-switcher__caret {
   font-size: 0.85em; opacity: 0.7;
   transition: transform 0.15s ease;
 }
-.lang-switcher[open] .lang-switcher__btn .fa-caret-down {
+/* 체크박스가 체크되면 caret 회전 */
+.lang-switcher__toggle:checked ~ .lang-switcher__btn .lang-switcher__caret {
   transform: rotate(180deg);
 }
 
 .lang-switcher__menu {
+  display: none !important;
   position: absolute !important;
   top: calc(100% + 0.4rem) !important;
   right: 0 !important;
@@ -169,8 +176,12 @@ table th {
   -webkit-backdrop-filter: blur(8px);
   font-size: 0.88em;
   padding: 0.35rem 0;
-  /* <details> 가 닫혀 있으면 자식이 자동으로 숨겨지므로 별도 display 처리 불필요 */
 }
+/* 체크박스 체크 시 메뉴 표시 — 형제 결합자 */
+.lang-switcher__toggle:checked ~ .lang-switcher__menu {
+  display: block !important;
+}
+
 .lang-switcher__menu a {
   display: block !important;
   padding: 0.5rem 0.95rem !important;
