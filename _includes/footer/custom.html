@@ -5,20 +5,26 @@
      - 우하단: 친구 floating 카드 (태블릿 이하, < 1024px)
      ============================================================ -->
 
-<!-- ===== 언어 전환 — Liquid 로 서버 사이드 렌더된 진짜 URL ===== -->
+<!-- ===== 언어 전환 — 클릭 토글 (체크박스 해킹) ===== -->
 {%- assign cur_path = page.url -%}
 {%- assign tr_host = "taeyoungphys-github-io.translate.goog" -%}
 {%- assign or_host = "taeyoungphys.github.io" -%}
 
-<div id="lang-switcher" class="lang-switcher" aria-label="Language">
-  <i class="fas fa-globe lang-switcher__icon" aria-hidden="true"></i>
-  <a href="https://{{ or_host }}{{ cur_path }}" data-lang="ko" title="한국어 (원문)">KR</a>
-  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=en&_x_tr_hl=en"       data-lang="en"    title="English">EN</a>
-  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=ja&_x_tr_hl=ja"       data-lang="ja"    title="日本語">JA</a>
-  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=zh-CN&_x_tr_hl=zh-CN" data-lang="zh-CN" title="中文">CN</a>
-  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=es&_x_tr_hl=es"       data-lang="es"    title="Español">ES</a>
-  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=fr&_x_tr_hl=fr"       data-lang="fr"    title="Français">FR</a>
-  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=de&_x_tr_hl=de"       data-lang="de"    title="Deutsch">DE</a>
+<div id="lang-switcher" class="lang-switcher">
+  <input type="checkbox" id="lang-switcher-toggle" class="lang-switcher__toggle" aria-label="Language">
+  <label for="lang-switcher-toggle" class="lang-switcher__trigger">
+    <i class="fas fa-globe"></i>
+    <i class="fas fa-caret-down lang-switcher__caret"></i>
+  </label>
+  <div class="lang-switcher__menu">
+    <a href="https://{{ or_host }}{{ cur_path }}" data-lang="ko" title="한국어 (원문)">KR</a>
+    <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=en&_x_tr_hl=en"       data-lang="en"    title="English">EN</a>
+    <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=ja&_x_tr_hl=ja"       data-lang="ja"    title="日本語">JA</a>
+    <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=zh-CN&_x_tr_hl=zh-CN" data-lang="zh-CN" title="中文">CN</a>
+    <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=es&_x_tr_hl=es"       data-lang="es"    title="Español">ES</a>
+    <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=fr&_x_tr_hl=fr"       data-lang="fr"    title="Français">FR</a>
+    <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=de&_x_tr_hl=de"       data-lang="de"    title="Deutsch">DE</a>
+  </div>
 </div>
 
 <script>
@@ -31,6 +37,8 @@
     document.body.appendChild(sw);
   }
 
+  var toggle = document.getElementById('lang-switcher-toggle');
+
   // 다중 이벤트 + capture phase — 어떤 글로벌 핸들러가 가로채도 통과
   var navigating = false;
   function navigateFromEvent(e) {
@@ -41,6 +49,7 @@
     var url = a.getAttribute('href');
     if (!url || url === '#') return;
     navigating = true;
+    if (toggle) toggle.checked = false;
     try { e.preventDefault();      } catch(_) {}
     try { e.stopPropagation();     } catch(_) {}
     try { e.stopImmediatePropagation(); } catch(_) {}
@@ -48,6 +57,15 @@
   }
   ['pointerdown', 'mousedown', 'click', 'touchstart'].forEach(function(ev) {
     sw.addEventListener(ev, navigateFromEvent, true);
+  });
+
+  // 외부 클릭 시 메뉴 닫기
+  document.addEventListener('click', function(e) {
+    if (!sw.contains(e.target) && toggle) toggle.checked = false;
+  });
+  // ESC 키로 닫기
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && toggle) toggle.checked = false;
   });
 })();
 </script>
@@ -131,6 +149,9 @@
   // ----- 데스크탑 배너 접기/펼치기 -----
   var banner = document.getElementById('friends-banner');
   if (banner) {
+    // 부모 stacking context 회피 (클릭 가로채임 방지) — body 직속으로 이동
+    if (banner.parentElement !== document.body) document.body.appendChild(banner);
+
     var collapseBtn = banner.querySelector('.friends-banner__collapse');
     if (collapseBtn) {
       collapseBtn.addEventListener('click', function() {
@@ -144,6 +165,7 @@
   // ----- 모바일 floating 토글 -----
   var widget = document.getElementById('friends-widget');
   if (widget) {
+    if (widget.parentElement !== document.body) document.body.appendChild(widget);
     var toggle = widget.querySelector('.friends-widget__toggle');
     var list = widget.querySelector('.friends-widget__list');
     if (toggle && list) {
