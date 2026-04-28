@@ -206,6 +206,147 @@ toc: false
   .sudoku-check-msg.ok      { display: block; background: rgba(34,197,94,0.18); border-left: 3px solid #22c55e; }
   .sudoku-check-msg.error   { display: block; background: rgba(220,38,38,0.18); border-left: 3px solid #dc2626; }
   .sudoku-check-msg.warn    { display: block; background: rgba(234,179,8,0.18);  border-left: 3px solid #eab308; }
+
+  /* ===== 리더보드 ===== */
+  .sudoku-leaderboard {
+    margin-top: 2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .sudoku-leaderboard h3 {
+    margin: 0 0 0.7rem;
+    font-size: 1.1rem;
+  }
+  .lb-controls {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+  }
+  .lb-controls button {
+    padding: 0.32rem 0.7rem;
+    border: 1px solid #555;
+    background: #1e1e1e; color: #ddd;
+    border-radius: 5px; cursor: pointer; font-size: 0.82rem;
+  }
+  .lb-controls button.active {
+    background: #3b82f6; color: #fff; border-color: #3b82f6;
+  }
+  .lb-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 600px) {
+    .lb-grid { grid-template-columns: 1fr; }
+  }
+  .lb-col {
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    padding: 0.7rem 0.85rem;
+    min-height: 80px;
+  }
+  .lb-col h4 {
+    margin: 0 0 0.5rem; font-size: 0.92rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .lb-col .lb-badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.1);
+    color: #aaa;
+    font-weight: normal;
+  }
+  .lb-list {
+    list-style: none;
+    margin: 0; padding: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.83rem;
+    line-height: 1.7;
+  }
+  .lb-list li {
+    display: grid;
+    grid-template-columns: 1.6em 1fr auto;
+    gap: 0.5rem;
+    padding: 0.18rem 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.05);
+  }
+  .lb-list li.you {
+    background: rgba(59,130,246,0.18);
+    margin: 0 -0.4rem;
+    padding: 0.18rem 0.4rem;
+    border-radius: 3px;
+  }
+  .lb-list .lb-rank { color: #888; text-align: right; }
+  .lb-list .lb-name {
+    color: #ececec;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .lb-list .lb-time { color: #4f9bff; font-variant-numeric: tabular-nums; }
+  .lb-empty {
+    color: #888; font-size: 0.85em; padding: 0.5rem 0;
+    font-style: italic;
+  }
+  .lb-status {
+    font-size: 0.78em; color: #888;
+    margin-top: 0.4rem;
+  }
+  .lb-status.error { color: #ff8a8a; }
+
+  /* ===== 닉네임 입력 (win 모달 내) ===== */
+  .win-nick-row {
+    display: flex; gap: 0.4rem; margin: 0.8rem 0 0.6rem;
+  }
+  .win-nick-row input {
+    flex: 1;
+    padding: 0.55rem 0.7rem;
+    background: #2a2a2a; color: #eee;
+    border: 1px solid #555;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .win-nick-row input:focus {
+    outline: none; border-color: #3b82f6;
+  }
+  .win-global-row {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.85rem; opacity: 0.9;
+    margin-bottom: 0.7rem;
+  }
+  .win-global-row input { width: 16px; height: 16px; }
+  .win-global-row.disabled { opacity: 0.4; cursor: not-allowed; }
+  .win-btn-row {
+    display: flex; gap: 0.5rem;
+  }
+  .win-btn-row button {
+    flex: 1;
+    padding: 0.55rem;
+    border: none; border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  .win-btn-skip {
+    background: #333; color: #ddd;
+  }
+  .win-btn-skip:hover { background: #444; }
+  .win-btn-submit {
+    background: #3b82f6; color: white;
+    font-weight: 500;
+  }
+  .win-btn-submit:hover { background: #2563eb; }
+  .win-btn-submit:disabled {
+    background: #555; cursor: not-allowed;
+  }
+  .win-submitted {
+    margin: 0.6rem 0 0.4rem;
+    padding: 0.5rem 0.7rem;
+    background: rgba(34,197,94,0.18);
+    border-left: 3px solid #22c55e;
+    border-radius: 4px;
+    font-size: 0.88rem;
+  }
 </style>
 
 <div class="sudoku-app">
@@ -281,17 +422,76 @@ toc: false
     </div>
   </div>
 
-  <!-- ===== Win overlay ===== -->
+  <!-- ===== Win overlay (닉네임 입력 + 리더보드 등록) ===== -->
   <div class="sudoku-overlay" id="sudoku-win" style="display:none">
     <div class="sudoku-card">
       <h2>🎉 <span data-i18n="winTitle"></span></h2>
-      <p class="start-sub" data-i18n="winSub"></p>
+      <p class="start-sub"><span data-i18n="winSub"></span></p>
       <div class="win-time" id="win-time">00:00</div>
-      <button id="win-newpuzzle" class="start-btn-primary" data-i18n="newPuzzle"></button>
+
+      <!-- 닉네임 입력 (등록 전) -->
+      <div id="win-nick-form">
+        <div class="win-nick-row">
+          <input type="text" id="win-nick-input" maxlength="12"
+                 placeholder="" autocomplete="off" autocapitalize="off">
+        </div>
+        <div class="win-global-row" id="win-global-row">
+          <input type="checkbox" id="win-global-chk">
+          <label for="win-global-chk" data-i18n="winGlobalLabel"></label>
+        </div>
+        <div class="win-btn-row">
+          <button class="win-btn-skip" id="win-btn-skip" data-i18n="winSkip"></button>
+          <button class="win-btn-submit" id="win-btn-submit" data-i18n="winSubmit"></button>
+        </div>
+      </div>
+
+      <!-- 등록 완료 후 -->
+      <div id="win-submitted" style="display:none">
+        <div class="win-submitted" id="win-submitted-msg"></div>
+        <div class="win-btn-row">
+          <button class="win-btn-submit" id="win-newpuzzle" data-i18n="newPuzzle"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 리더보드 ===== -->
+  <div class="sudoku-leaderboard" id="sudoku-leaderboard" style="display:none">
+    <h3 data-i18n="leaderboardTitle"></h3>
+    <div class="lb-controls" id="lb-controls">
+      <button data-diff="easy"   class="active">Easy</button>
+      <button data-diff="medium">Medium</button>
+      <button data-diff="hard">Hard</button>
+      <button data-diff="expert">Expert</button>
+    </div>
+    <div class="lb-grid">
+      <div class="lb-col">
+        <h4 data-i18n="lbLocal">내 기록</h4>
+        <ol class="lb-list" id="lb-local-list"></ol>
+      </div>
+      <div class="lb-col">
+        <h4>
+          <span data-i18n="lbGlobal">전체 기록</span>
+          <span class="lb-badge" id="lb-global-badge">Firebase</span>
+        </h4>
+        <ol class="lb-list" id="lb-global-list"></ol>
+        <div class="lb-status" id="lb-global-status"></div>
+      </div>
     </div>
   </div>
 
 </div>
+
+<!-- Firebase 설정 (비어 있으면 로컬 모드) -->
+<script>
+  window.SUDOKU_FB = {
+    apiKey:      "{{ site.firebase.apiKey }}",
+    authDomain:  "{{ site.firebase.authDomain }}",
+    databaseURL: "{{ site.firebase.databaseURL }}",
+    projectId:   "{{ site.firebase.projectId }}",
+    appId:       "{{ site.firebase.appId }}"
+  };
+</script>
 
 <script>
 (function() {
@@ -330,7 +530,23 @@ toc: false
       kIns:  '숫자 입력',
       kMode: '입력/메모 전환',
       kMove: '셀 이동',
-      kErase:'지우기'
+      kErase:'지우기',
+      // 리더보드
+      winGlobalLabel: '전체 리더보드에 등록',
+      winSkip: '건너뛰기',
+      winSubmit: '등록',
+      winNickPlaceholder: '닉네임 (1-12자)',
+      winSubmittedLocal: '✓ 내 디바이스 기록에 저장됨',
+      winSubmittedGlobal: '✓ 내 디바이스 + 전체 리더보드에 등록됨',
+      winSubmittedSkip: '저장하지 않음',
+      leaderboardTitle: '리더보드',
+      lbLocal: '내 기록 (이 디바이스)',
+      lbGlobal: '전체 기록',
+      lbEmpty: '아직 기록 없음',
+      lbLoading: '불러오는 중...',
+      lbFbDisabled: 'Firebase 미설정 — 로컬만',
+      lbFbError: '로딩 실패',
+      lbFbNoConfig: '설정 안됨'
     },
     en: {
       startTitle: 'Sudoku',
@@ -363,7 +579,23 @@ toc: false
       kIns:  'Insert digit',
       kMode: 'Toggle input / memo',
       kMove: 'Move cell',
-      kErase:'Erase'
+      kErase:'Erase',
+      // Leaderboard
+      winGlobalLabel: 'Submit to global leaderboard',
+      winSkip: 'Skip',
+      winSubmit: 'Submit',
+      winNickPlaceholder: 'Nickname (1-12 chars)',
+      winSubmittedLocal: '✓ Saved to this device',
+      winSubmittedGlobal: '✓ Saved to this device + global leaderboard',
+      winSubmittedSkip: 'Not saved',
+      leaderboardTitle: 'Leaderboard',
+      lbLocal: 'My records (this device)',
+      lbGlobal: 'Global records',
+      lbEmpty: 'No records yet',
+      lbLoading: 'Loading...',
+      lbFbDisabled: 'Firebase disabled — local only',
+      lbFbError: 'Load failed',
+      lbFbNoConfig: 'Not configured'
     }
   };
 
@@ -770,7 +1002,25 @@ toc: false
     stopTimer();
     setTimeout(() => {
       winTimeEl.textContent = formatTime(elapsedSec);
+      // Reset win modal to nickname input state
+      document.getElementById('win-nick-form').style.display = '';
+      document.getElementById('win-submitted').style.display = 'none';
+      document.getElementById('win-nick-input').value = lastUsedNickname || '';
+      document.getElementById('win-nick-input').placeholder = t('winNickPlaceholder');
+      // Pre-check global if Firebase configured
+      var chk = document.getElementById('win-global-chk');
+      var row = document.getElementById('win-global-row');
+      if (fbReady) {
+        chk.disabled = false; chk.checked = true;
+        row.classList.remove('disabled');
+      } else {
+        chk.disabled = true; chk.checked = false;
+        row.classList.add('disabled');
+      }
       winOverlay.style.display = 'flex';
+      setTimeout(function() {
+        document.getElementById('win-nick-input').focus();
+      }, 50);
     }, 200);
   }
 
@@ -938,8 +1188,262 @@ toc: false
     startNewPuzzle();
   });
 
-  // Initial show
+  // ============================================================
+  // 리더보드: localStorage + Firebase Realtime DB
+  // ============================================================
+  const LB_LOCAL_KEY = 'taeyoungphys_sudoku_lb_v1';
+  const LB_NICK_KEY  = 'taeyoungphys_sudoku_lastnick';
+  const LB_MAX_DISPLAY = 10;
+  let fbReady = false;       // Firebase 사용 가능 여부
+  let fbDb = null;
+  let fbInitStatus = 'pending'; // 'pending' | 'ready' | 'disabled' | 'error'
+  let lastUsedNickname = '';
+  let lbCurrentDiff = 'easy';
+  let lastSubmittedKey = null; // 방금 등록한 entry id (강조 표시용)
+
+  // ----- localStorage -----
+  function loadLocalLB() {
+    try {
+      const raw = localStorage.getItem(LB_LOCAL_KEY);
+      if (!raw) return { easy: [], medium: [], hard: [], expert: [] };
+      const obj = JSON.parse(raw);
+      return {
+        easy:   Array.isArray(obj.easy)   ? obj.easy   : [],
+        medium: Array.isArray(obj.medium) ? obj.medium : [],
+        hard:   Array.isArray(obj.hard)   ? obj.hard   : [],
+        expert: Array.isArray(obj.expert) ? obj.expert : []
+      };
+    } catch(e) { return { easy: [], medium: [], hard: [], expert: [] }; }
+  }
+  function saveLocalLB(data) {
+    try { localStorage.setItem(LB_LOCAL_KEY, JSON.stringify(data)); }
+    catch(e) { console.warn('localStorage save failed', e); }
+  }
+  function pushLocalEntry(diff, entry) {
+    const data = loadLocalLB();
+    if (!data[diff]) data[diff] = [];
+    data[diff].push(entry);
+    data[diff].sort((a, b) => a.timeSeconds - b.timeSeconds);
+    if (data[diff].length > 50) data[diff] = data[diff].slice(0, 50);
+    saveLocalLB(data);
+    return data[diff];
+  }
+  function loadLastNickname() {
+    try { return localStorage.getItem(LB_NICK_KEY) || ''; }
+    catch(e) { return ''; }
+  }
+  function saveLastNickname(n) {
+    try { localStorage.setItem(LB_NICK_KEY, n); } catch(e) {}
+  }
+
+  // ----- Firebase 동적 로드 (modular SDK v10) -----
+  async function initFirebase() {
+    const cfg = window.SUDOKU_FB || {};
+    if (!cfg.databaseURL) {
+      fbInitStatus = 'disabled';
+      document.getElementById('lb-global-badge').textContent = t('lbFbNoConfig');
+      return;
+    }
+    try {
+      const appMod = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js');
+      const dbMod  = await import('https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js');
+      const app = appMod.initializeApp(cfg);
+      fbDb = dbMod.getDatabase(app);
+      fbDb._mod = dbMod;
+      fbReady = true;
+      fbInitStatus = 'ready';
+      document.getElementById('lb-global-badge').textContent = 'Firebase ✓';
+    } catch(e) {
+      console.error('Firebase init error', e);
+      fbReady = false;
+      fbInitStatus = 'error';
+      document.getElementById('lb-global-status').textContent =
+        t('lbFbError') + ' (' + (e && e.message ? e.message : e) + ')';
+      document.getElementById('lb-global-status').classList.add('error');
+    }
+  }
+
+  async function fetchGlobalLB(diff) {
+    if (!fbReady || !fbDb) return [];
+    const m = fbDb._mod;
+    const refQ = m.query(
+      m.ref(fbDb, 'sudoku_leaderboard/' + diff),
+      m.orderByChild('timeSeconds'),
+      m.limitToFirst(LB_MAX_DISPLAY)
+    );
+    const snap = await m.get(refQ);
+    const out = [];
+    snap.forEach(function(child) {
+      const v = child.val();
+      out.push({
+        id: child.key,
+        nickname: v.nickname || '?',
+        timeSeconds: Number(v.timeSeconds) || 0,
+        createdAt: Number(v.createdAt) || 0
+      });
+    });
+    return out;
+  }
+
+  async function pushGlobalEntry(diff, entry) {
+    if (!fbReady || !fbDb) return null;
+    const m = fbDb._mod;
+    const newRef = m.push(m.ref(fbDb, 'sudoku_leaderboard/' + diff));
+    await m.set(newRef, entry);
+    return newRef.key;
+  }
+
+  // ----- 렌더링 -----
+  function renderLocalLB(diff) {
+    const data = loadLocalLB();
+    const list = (data[diff] || []).slice(0, LB_MAX_DISPLAY);
+    const el = document.getElementById('lb-local-list');
+    if (list.length === 0) {
+      el.innerHTML = '<li class="lb-empty">' + t('lbEmpty') + '</li>';
+      return;
+    }
+    el.innerHTML = list.map(function(e, i) {
+      return '<li><span class="lb-rank">' + (i+1) + '.</span>' +
+             '<span class="lb-name">' + escapeHtml(e.nickname) + '</span>' +
+             '<span class="lb-time">' + formatTime(e.timeSeconds) + '</span></li>';
+    }).join('');
+  }
+
+  async function renderGlobalLB(diff) {
+    const el = document.getElementById('lb-global-list');
+    const status = document.getElementById('lb-global-status');
+    status.classList.remove('error');
+    if (fbInitStatus === 'pending') {
+      el.innerHTML = '<li class="lb-empty">' + t('lbLoading') + '</li>';
+      status.textContent = '';
+      return;
+    }
+    if (fbInitStatus === 'disabled') {
+      el.innerHTML = '<li class="lb-empty">' + t('lbFbDisabled') + '</li>';
+      status.textContent = '';
+      return;
+    }
+    if (fbInitStatus === 'error') {
+      el.innerHTML = '<li class="lb-empty">' + t('lbFbError') + '</li>';
+      status.classList.add('error');
+      return;
+    }
+    el.innerHTML = '<li class="lb-empty">' + t('lbLoading') + '</li>';
+    try {
+      const list = await fetchGlobalLB(diff);
+      if (list.length === 0) {
+        el.innerHTML = '<li class="lb-empty">' + t('lbEmpty') + '</li>';
+        return;
+      }
+      el.innerHTML = list.map(function(e, i) {
+        const youCls = (e.id && e.id === lastSubmittedKey) ? ' you' : '';
+        return '<li class="' + youCls + '"><span class="lb-rank">' + (i+1) + '.</span>' +
+               '<span class="lb-name">' + escapeHtml(e.nickname) + '</span>' +
+               '<span class="lb-time">' + formatTime(e.timeSeconds) + '</span></li>';
+      }).join('');
+      status.textContent = '';
+    } catch(e) {
+      el.innerHTML = '<li class="lb-empty">' + t('lbFbError') + '</li>';
+      status.textContent = t('lbFbError') + ' — ' + (e && e.message ? e.message : e);
+      status.classList.add('error');
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
+    });
+  }
+
+  function setLBDifficulty(diff) {
+    lbCurrentDiff = diff;
+    document.querySelectorAll('#lb-controls button').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.diff === diff);
+    });
+    renderLocalLB(diff);
+    renderGlobalLB(diff);
+  }
+
+  // ----- Win 모달: 등록 / 건너뛰기 -----
+  async function submitScore(useGlobal) {
+    const input = document.getElementById('win-nick-input');
+    const nick = (input.value || '').trim().slice(0, 12);
+    if (nick.length === 0) { input.focus(); return; }
+
+    saveLastNickname(nick);
+    lastUsedNickname = nick;
+
+    const entry = {
+      nickname: nick,
+      timeSeconds: elapsedSec,
+      createdAt: Date.now()
+    };
+
+    // 1) 항상 로컬에 저장
+    pushLocalEntry(difficulty, Object.assign({}, entry));
+
+    // 2) Firebase 등록 (선택)
+    let globalOk = false;
+    let globalKey = null;
+    if (useGlobal && fbReady) {
+      try {
+        globalKey = await pushGlobalEntry(difficulty, entry);
+        globalOk = true;
+        lastSubmittedKey = globalKey;
+      } catch(e) {
+        console.warn('Firebase push failed', e);
+      }
+    }
+
+    // 3) 모달 상태 전환
+    document.getElementById('win-nick-form').style.display = 'none';
+    var msgEl = document.getElementById('win-submitted-msg');
+    msgEl.textContent = globalOk ? t('winSubmittedGlobal') : t('winSubmittedLocal');
+    document.getElementById('win-submitted').style.display = '';
+
+    // 4) 리더보드 갱신 (현재 게임의 난이도로 자동 전환)
+    setLBDifficulty(difficulty);
+    document.getElementById('sudoku-leaderboard').style.display = '';
+  }
+
+  function skipScore() {
+    document.getElementById('win-nick-form').style.display = 'none';
+    var msgEl = document.getElementById('win-submitted-msg');
+    msgEl.textContent = t('winSubmittedSkip');
+    document.getElementById('win-submitted').style.display = '';
+    document.getElementById('sudoku-leaderboard').style.display = '';
+  }
+
+  // 이벤트 바인딩
+  document.getElementById('win-btn-submit').addEventListener('click', function() {
+    var useGlobal = document.getElementById('win-global-chk').checked && fbReady;
+    submitScore(useGlobal);
+  });
+  document.getElementById('win-btn-skip').addEventListener('click', skipScore);
+  document.getElementById('win-nick-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var useGlobal = document.getElementById('win-global-chk').checked && fbReady;
+      submitScore(useGlobal);
+    }
+  });
+  document.getElementById('lb-controls').addEventListener('click', function(e) {
+    var b = e.target.closest('button[data-diff]');
+    if (!b) return;
+    setLBDifficulty(b.dataset.diff);
+  });
+
+  // ============================================================
+  // 부팅
+  // ============================================================
+  lastUsedNickname = loadLastNickname();
   applyLang();
   showStart();
+  // 리더보드 영역은 첫 게임 클리어 또는 페이지 보고 싶으면 표시
+  document.getElementById('sudoku-leaderboard').style.display = '';
+  setLBDifficulty('easy');
+  initFirebase().then(function() {
+    // Firebase 로딩 끝나면 전체 리더보드 다시 그림
+    renderGlobalLB(lbCurrentDiff);
+  });
 })();
 </script>
