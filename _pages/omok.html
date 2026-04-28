@@ -111,14 +111,14 @@ toc: false
     color: white;
   }
 
-  /* ===== AI 사고 인디케이터 ===== */
+  /* ===== AI 사고 인디케이터 (보드 하단) ===== */
   .ai-thinking {
     display: flex; align-items: center; gap: 0.4rem;
     padding: 0.5rem 0.85rem;
     background: rgba(99, 154, 235, 0.18);
     border-left: 3px solid #6ab0ff;
     border-radius: 4px;
-    margin-bottom: 0.6rem;
+    margin-top: 0.7rem;
     font-size: 0.92rem;
   }
   .ai-thinking__icon { font-size: 1.05rem; }
@@ -187,13 +187,6 @@ toc: false
   <!-- Game UI -->
   <div class="omok-status" id="omok-status"></div>
 
-  <!-- AI 사고 인디케이터 -->
-  <div class="ai-thinking" id="ai-thinking" style="display:none">
-    <span class="ai-thinking__icon">🤖</span>
-    <span class="ai-thinking__text" data-i18n="aiThinking"></span><span class="ai-thinking__dots"></span>
-    <span class="ai-thinking__progress" id="ai-progress"></span>
-  </div>
-
   <!-- AI 승률 표시 -->
   <div class="ai-winprob" id="ai-winprob" style="display:none">
     <div class="ai-winprob__row">
@@ -215,6 +208,13 @@ toc: false
 
   <div class="omok-board-wrap">
     <canvas id="omok-canvas"></canvas>
+  </div>
+
+  <!-- AI 사고 인디케이터 — 보드 아래 -->
+  <div class="ai-thinking" id="ai-thinking" style="display:none">
+    <span class="ai-thinking__icon">🤖</span>
+    <span class="ai-thinking__text" data-i18n="aiThinking"></span><span class="ai-thinking__dots"></span>
+    <span class="ai-thinking__progress" id="ai-progress"></span>
   </div>
 
   <div class="omok-history-wrap">
@@ -975,13 +975,18 @@ toc: false
     await yieldUI();
 
     let move = null;
-    try {
-      if (aiDifficulty === 'easy')        move = aiMoveEasy(board, aiColor);
-      else if (aiDifficulty === 'medium') move = aiMoveMedium(board, aiColor);
-      else                                move = await aiMoveHard(board, aiColor);
-    } catch(e) {
-      console.warn('AI fallback:', e);
-      try { move = aiMoveMedium(board, aiColor); } catch(_) {}
+    // 흑 선공 첫 수는 무조건 천원 (15x15 중앙 = (7,7) = H8)
+    if (history.length === 0 && aiColor === 'B') {
+      move = { x: 7, y: 7 };
+    } else {
+      try {
+        if (aiDifficulty === 'easy')        move = aiMoveEasy(board, aiColor);
+        else if (aiDifficulty === 'medium') move = aiMoveMedium(board, aiColor);
+        else                                move = await aiMoveHard(board, aiColor);
+      } catch(e) {
+        console.warn('AI fallback:', e);
+        try { move = aiMoveMedium(board, aiColor); } catch(_) {}
+      }
     }
 
     // 합법 수가 없는 경우 (예: 렌주에서 흑이 모든 자리 금수)
