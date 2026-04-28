@@ -315,8 +315,37 @@ toc: false
     font-size: 0.85rem; opacity: 0.9;
     margin-bottom: 0.7rem;
   }
-  .win-global-row input { width: 16px; height: 16px; }
-  .win-global-row.disabled { opacity: 0.4; cursor: not-allowed; }
+  .win-global-row.disabled { opacity: 0.4; pointer-events: none; }
+  .win-global-toggle {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: transparent;
+    border: 1px solid #555;
+    color: #ddd;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit; font-size: 0.85rem;
+  }
+  .win-global-mark {
+    display: inline-block; width: 14px; height: 14px;
+    border: 1px solid #888;
+    border-radius: 3px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .win-global-toggle.is-on { background: rgba(59,130,246,0.2); border-color: #3b82f6; color: #fff; }
+  .win-global-toggle.is-on .win-global-mark {
+    background: #3b82f6; border-color: #3b82f6;
+  }
+  .win-global-toggle.is-on .win-global-mark::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 4px; height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
   .win-btn-row {
     display: flex; gap: 0.5rem;
   }
@@ -394,18 +423,18 @@ toc: false
       <div class="start-opt-group">
         <div class="start-opt-label" data-i18n="diffLabel"></div>
         <div class="start-opt-radios">
-          <label><input type="radio" name="diff" value="easy" checked>   <span data-i18n="diffEasy"></span></label>
-          <label><input type="radio" name="diff" value="medium">         <span data-i18n="diffMedium"></span></label>
-          <label><input type="radio" name="diff" value="hard">           <span data-i18n="diffHard"></span></label>
-          <label><input type="radio" name="diff" value="expert">         <span data-i18n="diffExpert"></span></label>
+          <button type="button" class="opt-btn active" data-group="diff" data-value="easy"><span data-i18n="diffEasy"></span></button>
+          <button type="button" class="opt-btn"        data-group="diff" data-value="medium"><span data-i18n="diffMedium"></span></button>
+          <button type="button" class="opt-btn"        data-group="diff" data-value="hard"><span data-i18n="diffHard"></span></button>
+          <button type="button" class="opt-btn"        data-group="diff" data-value="expert"><span data-i18n="diffExpert"></span></button>
         </div>
       </div>
 
       <div class="start-opt-group">
         <div class="start-opt-label" data-i18n="langLabel"></div>
         <div class="start-opt-radios">
-          <label><input type="radio" name="lang" value="ko" checked> 한국어</label>
-          <label><input type="radio" name="lang" value="en"> English</label>
+          <button type="button" class="opt-btn active" data-group="lang" data-value="ko">한국어</button>
+          <button type="button" class="opt-btn"        data-group="lang" data-value="en">English</button>
         </div>
       </div>
 
@@ -436,8 +465,10 @@ toc: false
                  placeholder="" autocomplete="off" autocapitalize="off">
         </div>
         <div class="win-global-row" id="win-global-row">
-          <input type="checkbox" id="win-global-chk">
-          <label for="win-global-chk" data-i18n="winGlobalLabel"></label>
+          <button type="button" id="win-global-toggle" class="win-global-toggle is-on" aria-pressed="true">
+            <span class="win-global-mark"></span>
+            <span data-i18n="winGlobalLabel"></span>
+          </button>
         </div>
         <div class="win-btn-row">
           <button class="win-btn-skip" id="win-btn-skip" data-i18n="winSkip"></button>
@@ -1007,14 +1038,16 @@ toc: false
       document.getElementById('win-submitted').style.display = 'none';
       document.getElementById('win-nick-input').value = lastUsedNickname || '';
       document.getElementById('win-nick-input').placeholder = t('winNickPlaceholder');
-      // Pre-check global if Firebase configured
-      var chk = document.getElementById('win-global-chk');
+      // Pre-set global toggle if Firebase configured
+      var tog = document.getElementById('win-global-toggle');
       var row = document.getElementById('win-global-row');
       if (fbReady) {
-        chk.disabled = false; chk.checked = true;
+        tog.classList.add('is-on');
+        tog.setAttribute('aria-pressed', 'true');
         row.classList.remove('disabled');
       } else {
-        chk.disabled = true; chk.checked = false;
+        tog.classList.remove('is-on');
+        tog.setAttribute('aria-pressed', 'false');
         row.classList.add('disabled');
       }
       winOverlay.style.display = 'flex';
@@ -1107,12 +1140,19 @@ toc: false
       '<div><span class="key">⌫</span> / <span class="key">Del</span>' + t('kErase') + '</div>';
   }
 
+  function setActiveBtn(group, value) {
+    document.querySelectorAll('.opt-btn[data-group="' + group + '"]').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.value === value);
+    });
+  }
+  function getActiveValue(group) {
+    var b = document.querySelector('.opt-btn[data-group="' + group + '"].active');
+    return b ? b.dataset.value : null;
+  }
+
   function showStart() {
-    // preselect current values
-    const dr = document.querySelector('input[name="diff"][value="' + difficulty + '"]');
-    if (dr) dr.checked = true;
-    const lr = document.querySelector('input[name="lang"][value="' + currentLang + '"]');
-    if (lr) lr.checked = true;
+    setActiveBtn('diff', difficulty);
+    setActiveBtn('lang', currentLang);
     applyLang();
     startOverlay.style.display = 'flex';
     winOverlay.style.display = 'none';
@@ -1171,17 +1211,29 @@ toc: false
     else if (k === 'ArrowRight')   { moveSelection( 0,  1); e.preventDefault(); }
   });
 
-  // Live update language on radio change in start screen
-  document.querySelectorAll('input[name="lang"]').forEach(r => {
-    r.addEventListener('change', () => {
-      currentLang = r.value;
+  // 옵션 버튼 클릭 → 그룹 내 active 갱신
+  startOverlay.addEventListener('click', function(e) {
+    var b = e.target.closest('.opt-btn');
+    if (!b) return;
+    var group = b.dataset.group;
+    setActiveBtn(group, b.dataset.value);
+    if (group === 'lang') {
+      currentLang = b.dataset.value;
       applyLang();
-    });
+    }
+  });
+
+  // 전역 토글 버튼 (체크박스 대체)
+  document.getElementById('win-global-toggle').addEventListener('click', function(e) {
+    if (!fbReady) return;
+    var btn = e.currentTarget;
+    var on = btn.classList.toggle('is-on');
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
 
   startBtn.addEventListener('click', () => {
-    const dv = document.querySelector('input[name="diff"]:checked').value;
-    const lv = document.querySelector('input[name="lang"]:checked').value;
+    const dv = getActiveValue('diff') || 'easy';
+    const lv = getActiveValue('lang') || 'ko';
     difficulty = dv;
     currentLang = lv;
     applyLang();
@@ -1416,13 +1468,13 @@ toc: false
 
   // 이벤트 바인딩
   document.getElementById('win-btn-submit').addEventListener('click', function() {
-    var useGlobal = document.getElementById('win-global-chk').checked && fbReady;
+    var useGlobal = document.getElementById('win-global-toggle').classList.contains('is-on') && fbReady;
     submitScore(useGlobal);
   });
   document.getElementById('win-btn-skip').addEventListener('click', skipScore);
   document.getElementById('win-nick-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
-      var useGlobal = document.getElementById('win-global-chk').checked && fbReady;
+      var useGlobal = document.getElementById('win-global-toggle').classList.contains('is-on') && fbReady;
       submitScore(useGlobal);
     }
   });

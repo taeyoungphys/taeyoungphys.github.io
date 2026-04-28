@@ -116,15 +116,16 @@ table th {
 }
 
 /* ============================================================
-   언어 전환 — 클릭 토글 (체크박스 해킹, 순수 CSS)
+   언어 전환 — <details>/<summary> (폼 요소 X)
    ============================================================ */
-.lang-switcher {
+details.lang-switcher {
   position: fixed !important;
   top: 4.5rem !important;
   right: 1rem !important;
   z-index: 2147483647 !important;
   display: inline-flex !important;
   align-items: center;
+  flex-direction: row-reverse;  /* summary 가 좌측에 오도록 */
   background: rgba(30, 30, 40, 0.85);
   border: 1px solid rgba(255,255,255,0.18);
   border-radius: 0.5rem;
@@ -134,28 +135,24 @@ table th {
   box-shadow: 0 2px 10px rgba(0,0,0,0.3);
   font-family: inherit;
   pointer-events: auto !important;
-  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.2s ease;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
-.lang-switcher:hover { background: rgba(30, 30, 40, 0.92); }
+details.lang-switcher:hover { background: rgba(30, 30, 40, 0.92); }
 
-/* 체크박스: 시각적으로 숨김 (단, 클릭은 label 로 받음) */
-.lang-switcher__toggle {
-  position: absolute !important;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px; border: 0;
-  overflow: hidden; clip: rect(0 0 0 0);
-}
+/* 기본 디스클로저 마커(▶) 숨김 */
+details.lang-switcher > summary { list-style: none !important; }
+details.lang-switcher > summary::-webkit-details-marker { display: none !important; }
+details.lang-switcher > summary::marker { content: '' !important; }
 
 .lang-switcher__trigger {
   color: #cfd8e6;
   font-size: 0.95em;
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 0.3rem;
   cursor: pointer;
   user-select: none;
   padding: 0.1rem 0.15rem;
-  margin: 0 !important;
 }
 .lang-switcher__trigger:hover { color: #fff; }
 .lang-switcher__caret {
@@ -163,19 +160,16 @@ table th {
   opacity: 0.7;
   transition: transform 0.2s ease;
 }
-.lang-switcher__toggle:checked ~ .lang-switcher__trigger .lang-switcher__caret {
+details.lang-switcher[open] .lang-switcher__caret {
   transform: rotate(180deg);
 }
 
-/* 메뉴: 기본 접힘. 체크박스 체크 시 펼침 */
+/* 메뉴: <details> 가 닫혀 있으면 자동 숨김 */
 .lang-switcher__menu {
-  display: none !important;
+  display: inline-flex;
   align-items: center;
   gap: 0.15rem;
-  margin-left: 0.35rem;
-}
-.lang-switcher__toggle:checked ~ .lang-switcher__menu {
-  display: inline-flex !important;
+  margin-right: 0.35rem;
 }
 
 .lang-switcher__menu a {

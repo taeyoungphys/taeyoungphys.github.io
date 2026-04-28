@@ -5,17 +5,16 @@
      - 우하단: 친구 floating 카드 (태블릿 이하, < 1024px)
      ============================================================ -->
 
-<!-- ===== 언어 전환 — 클릭 토글 (체크박스 해킹) ===== -->
+<!-- ===== 언어 전환 — <details>/<summary> (폼 요소 X, Google Translate 경고 X) ===== -->
 {%- assign cur_path = page.url -%}
 {%- assign tr_host = "taeyoungphys-github-io.translate.goog" -%}
 {%- assign or_host = "taeyoungphys.github.io" -%}
 
-<div id="lang-switcher" class="lang-switcher">
-  <input type="checkbox" id="lang-switcher-toggle" class="lang-switcher__toggle" aria-label="Language">
-  <label for="lang-switcher-toggle" class="lang-switcher__trigger">
+<details id="lang-switcher" class="lang-switcher">
+  <summary class="lang-switcher__trigger">
     <i class="fas fa-globe"></i>
     <i class="fas fa-caret-down lang-switcher__caret"></i>
-  </label>
+  </summary>
   <div class="lang-switcher__menu">
     <a href="https://{{ or_host }}{{ cur_path }}" data-lang="ko" title="한국어 (원문)">KR</a>
     <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=en&_x_tr_hl=en"       data-lang="en"    title="English">EN</a>
@@ -25,7 +24,7 @@
     <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=fr&_x_tr_hl=fr"       data-lang="fr"    title="Français">FR</a>
     <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=de&_x_tr_hl=de"       data-lang="de"    title="Deutsch">DE</a>
   </div>
-</div>
+</details>
 
 <script>
 (function() {
@@ -37,8 +36,6 @@
     document.body.appendChild(sw);
   }
 
-  var toggle = document.getElementById('lang-switcher-toggle');
-
   // 다중 이벤트 + capture phase — 어떤 글로벌 핸들러가 가로채도 통과
   var navigating = false;
   function navigateFromEvent(e) {
@@ -49,7 +46,7 @@
     var url = a.getAttribute('href');
     if (!url || url === '#') return;
     navigating = true;
-    if (toggle) toggle.checked = false;
+    sw.removeAttribute('open');
     try { e.preventDefault();      } catch(_) {}
     try { e.stopPropagation();     } catch(_) {}
     try { e.stopImmediatePropagation(); } catch(_) {}
@@ -61,11 +58,11 @@
 
   // 외부 클릭 시 메뉴 닫기
   document.addEventListener('click', function(e) {
-    if (!sw.contains(e.target) && toggle) toggle.checked = false;
+    if (!sw.contains(e.target)) sw.removeAttribute('open');
   });
   // ESC 키로 닫기
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && toggle) toggle.checked = false;
+    if (e.key === 'Escape') sw.removeAttribute('open');
   });
 })();
 </script>

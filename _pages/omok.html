@@ -92,10 +92,23 @@ toc: false
     letter-spacing: 0.05em; opacity: 0.6;
     margin-bottom: 0.4rem;
   }
-  .start-opt-radios { display: flex; gap: 1rem; flex-wrap: wrap; }
-  .start-opt-radios label {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    cursor: pointer; user-select: none; font-size: 0.92rem;
+  .start-opt-radios { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .opt-btn {
+    background: transparent;
+    border: 1px solid #555;
+    color: #ddd;
+    padding: 0.42rem 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.12s ease;
+    font-family: inherit;
+  }
+  .opt-btn:hover { background: rgba(255,255,255,0.06); border-color: #777; }
+  .opt-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
   }
   .start-btn-primary {
     width: 100%;
@@ -143,16 +156,16 @@ toc: false
       <div class="start-opt-group">
         <div class="start-opt-label" data-i18n="ruleLabel"></div>
         <div class="start-opt-radios">
-          <label><input type="radio" name="start-rule" value="renju" checked> <span data-i18n="ruleRenju"></span></label>
-          <label><input type="radio" name="start-rule" value="free"> <span data-i18n="ruleFree"></span></label>
+          <button type="button" class="opt-btn active" data-group="rule" data-value="renju"><span data-i18n="ruleRenju"></span></button>
+          <button type="button" class="opt-btn"        data-group="rule" data-value="free"><span data-i18n="ruleFree"></span></button>
         </div>
       </div>
 
       <div class="start-opt-group">
         <div class="start-opt-label" data-i18n="langLabel"></div>
         <div class="start-opt-radios">
-          <label><input type="radio" name="start-lang" value="ko" checked> 한국어</label>
-          <label><input type="radio" name="start-lang" value="en"> English</label>
+          <button type="button" class="opt-btn active" data-group="lang" data-value="ko">한국어</button>
+          <button type="button" class="opt-btn"        data-group="lang" data-value="en">English</button>
         </div>
       </div>
 
@@ -249,13 +262,19 @@ toc: false
     }
   }
 
+  function setActiveBtn(group, value) {
+    document.querySelectorAll('.opt-btn[data-group="' + group + '"]').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.value === value);
+    });
+  }
+  function getActiveValue(group) {
+    var b = document.querySelector('.opt-btn[data-group="' + group + '"].active');
+    return b ? b.dataset.value : null;
+  }
+
   function showStart() {
-    // preselect current values
-    const ruleVal = renjuMode ? 'renju' : 'free';
-    const ruleRadio = document.querySelector('input[name="start-rule"][value="' + ruleVal + '"]');
-    if (ruleRadio) ruleRadio.checked = true;
-    const langRadio = document.querySelector('input[name="start-lang"][value="' + currentLang + '"]');
-    if (langRadio) langRadio.checked = true;
+    setActiveBtn('rule', renjuMode ? 'renju' : 'free');
+    setActiveBtn('lang', currentLang);
     applyLang();
     startOverlay.style.display = 'flex';
   }
@@ -577,17 +596,21 @@ toc: false
   });
   window.addEventListener('resize', () => render());
 
-  // Live update lang on radio change in start screen
-  document.querySelectorAll('input[name="start-lang"]').forEach(r => {
-    r.addEventListener('change', () => {
-      currentLang = r.value;
+  // 옵션 버튼 클릭 → 그룹 내 active 갱신
+  startOverlay.addEventListener('click', function(e) {
+    var b = e.target.closest('.opt-btn');
+    if (!b) return;
+    var group = b.dataset.group;
+    setActiveBtn(group, b.dataset.value);
+    if (group === 'lang') {
+      currentLang = b.dataset.value;
       applyLang();
-    });
+    }
   });
 
   startBtn.addEventListener('click', () => {
-    const ruleVal = document.querySelector('input[name="start-rule"]:checked').value;
-    const langVal = document.querySelector('input[name="start-lang"]:checked').value;
+    const ruleVal = getActiveValue('rule') || 'renju';
+    const langVal = getActiveValue('lang') || 'ko';
     renjuMode = (ruleVal === 'renju');
     currentLang = langVal;
     applyLang();
