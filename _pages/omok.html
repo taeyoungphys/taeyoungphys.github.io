@@ -110,6 +110,63 @@ toc: false
     border-color: #3b82f6;
     color: white;
   }
+
+  /* ===== AI 사고 인디케이터 ===== */
+  .ai-thinking {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.5rem 0.85rem;
+    background: rgba(99, 154, 235, 0.18);
+    border-left: 3px solid #6ab0ff;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+    font-size: 0.92rem;
+  }
+  .ai-thinking__icon { font-size: 1.05rem; }
+  .ai-thinking__progress {
+    margin-left: auto;
+    font-size: 0.78rem;
+    opacity: 0.75;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .ai-thinking__dots::after {
+    content: '';
+    display: inline-block;
+    width: 1.2em;
+    text-align: left;
+    animation: ai-dots 1.2s steps(4, end) infinite;
+  }
+  @keyframes ai-dots {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%, 100% { content: '...'; }
+  }
+
+  /* ===== AI 승률 ===== */
+  .ai-winprob {
+    padding: 0.5rem 0.85rem;
+    background: rgba(0,0,0,0.22);
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+    font-size: 0.85rem;
+  }
+  .ai-winprob__row {
+    display: flex; justify-content: space-between;
+    margin-bottom: 0.3rem;
+  }
+  .ai-winprob__value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 600; color: #4f9bff;
+  }
+  .ai-winprob__bar {
+    height: 6px; background: #2a2a2a; border-radius: 3px;
+    overflow: hidden;
+  }
+  .ai-winprob__fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%);
+    transition: width 0.3s ease;
+  }
   .start-btn-primary {
     width: 100%;
     padding: 0.65rem;
@@ -129,6 +186,24 @@ toc: false
 
   <!-- Game UI -->
   <div class="omok-status" id="omok-status"></div>
+
+  <!-- AI 사고 인디케이터 -->
+  <div class="ai-thinking" id="ai-thinking" style="display:none">
+    <span class="ai-thinking__icon">🤖</span>
+    <span class="ai-thinking__text" data-i18n="aiThinking"></span><span class="ai-thinking__dots"></span>
+    <span class="ai-thinking__progress" id="ai-progress"></span>
+  </div>
+
+  <!-- AI 승률 표시 -->
+  <div class="ai-winprob" id="ai-winprob" style="display:none">
+    <div class="ai-winprob__row">
+      <span data-i18n="winProbLabel2"></span>
+      <span class="ai-winprob__value" id="ai-winprob-value">—</span>
+    </div>
+    <div class="ai-winprob__bar">
+      <div class="ai-winprob__fill" id="ai-winprob-fill" style="width:50%"></div>
+    </div>
+  </div>
 
   <div class="omok-controls">
     <span class="omok-rule-info" id="omok-rule-info"></span>
@@ -158,6 +233,40 @@ toc: false
         <div class="start-opt-radios">
           <button type="button" class="opt-btn active" data-group="rule" data-value="renju"><span data-i18n="ruleRenju"></span></button>
           <button type="button" class="opt-btn"        data-group="rule" data-value="free"><span data-i18n="ruleFree"></span></button>
+        </div>
+      </div>
+
+      <div class="start-opt-group">
+        <div class="start-opt-label" data-i18n="modeLabel"></div>
+        <div class="start-opt-radios">
+          <button type="button" class="opt-btn active" data-group="mode" data-value="pvp"><span data-i18n="modePvP"></span></button>
+          <button type="button" class="opt-btn"        data-group="mode" data-value="pvc"><span data-i18n="modePvC"></span></button>
+        </div>
+      </div>
+
+      <div class="pvc-options" id="pvc-options" style="display:none">
+        <div class="start-opt-group">
+          <div class="start-opt-label" data-i18n="aiColorLabel"></div>
+          <div class="start-opt-radios">
+            <button type="button" class="opt-btn"        data-group="aiColor" data-value="B"><span data-i18n="aiColorBlack"></span></button>
+            <button type="button" class="opt-btn active" data-group="aiColor" data-value="W"><span data-i18n="aiColorWhite"></span></button>
+            <button type="button" class="opt-btn"        data-group="aiColor" data-value="random"><span data-i18n="aiColorRandom"></span></button>
+          </div>
+        </div>
+        <div class="start-opt-group">
+          <div class="start-opt-label" data-i18n="aiDiffLabel"></div>
+          <div class="start-opt-radios">
+            <button type="button" class="opt-btn"        data-group="aiDiff" data-value="easy"><span data-i18n="aiDiffEasy"></span></button>
+            <button type="button" class="opt-btn active" data-group="aiDiff" data-value="medium"><span data-i18n="aiDiffMedium"></span></button>
+            <button type="button" class="opt-btn"        data-group="aiDiff" data-value="hard"><span data-i18n="aiDiffHard"></span></button>
+          </div>
+        </div>
+        <div class="start-opt-group">
+          <div class="start-opt-label" data-i18n="winProbLabel"></div>
+          <div class="start-opt-radios">
+            <button type="button" class="opt-btn active" data-group="winProb" data-value="show"><span data-i18n="show"></span></button>
+            <button type="button" class="opt-btn"        data-group="winProb" data-value="hide"><span data-i18n="hide"></span></button>
+          </div>
         </div>
       </div>
 
@@ -203,7 +312,25 @@ toc: false
       rNameFree: '일반룰',
       rNameRenju: '렌주룰',
       rulePrefix: '규칙: ',
-      confirmAbandon: '진행 중인 게임을 포기하고 설정 화면으로 돌아갈까요?'
+      confirmAbandon: '진행 중인 게임을 포기하고 설정 화면으로 돌아갈까요?',
+      // AI 모드
+      modeLabel: '모드',
+      modePvP: '사람 vs 사람',
+      modePvC: '사람 vs 컴퓨터',
+      aiColorLabel: '컴퓨터 색깔',
+      aiColorBlack: '흑(선공)',
+      aiColorWhite: '백(후공)',
+      aiColorRandom: '랜덤',
+      aiDiffLabel: '컴퓨터 난이도',
+      aiDiffEasy: '쉬움',
+      aiDiffMedium: '보통',
+      aiDiffHard: '어려움',
+      winProbLabel: 'AI 승률 표시',
+      winProbLabel2: 'AI 추정 승률',
+      show: '보임',
+      hide: '숨김',
+      aiThinking: '컴퓨터가 생각 중',
+      aiTimeout: '시간 초과 — 현재까지 최선 수로 진행'
     },
     en: {
       blackTurn: "Black's turn (first player)",
@@ -227,7 +354,25 @@ toc: false
       rNameFree: 'Free',
       rNameRenju: 'Renju',
       rulePrefix: 'Rule: ',
-      confirmAbandon: 'Abandon current game and return to settings?'
+      confirmAbandon: 'Abandon current game and return to settings?',
+      // AI mode
+      modeLabel: 'Mode',
+      modePvP: 'Player vs Player',
+      modePvC: 'Player vs Computer',
+      aiColorLabel: 'Computer color',
+      aiColorBlack: 'Black (1st)',
+      aiColorWhite: 'White (2nd)',
+      aiColorRandom: 'Random',
+      aiDiffLabel: 'AI difficulty',
+      aiDiffEasy: 'Easy',
+      aiDiffMedium: 'Medium',
+      aiDiffHard: 'Hard',
+      winProbLabel: 'Show AI win prob.',
+      winProbLabel2: 'AI estimated win prob.',
+      show: 'Show',
+      hide: 'Hide',
+      aiThinking: 'Computer thinking',
+      aiTimeout: 'Time out — using best move so far'
     }
   };
 
@@ -242,12 +387,25 @@ toc: false
   const histEl = document.getElementById('omok-history');
   const startOverlay = document.getElementById('omok-start');
   const startBtn = document.getElementById('start-btn');
+  const pvcOptionsEl = document.getElementById('pvc-options');
+  const aiThinkingEl = document.getElementById('ai-thinking');
+  const aiProgressEl = document.getElementById('ai-progress');
+  const aiWinprobEl = document.getElementById('ai-winprob');
+  const aiWinprobValueEl = document.getElementById('ai-winprob-value');
+  const aiWinprobFillEl = document.getElementById('ai-winprob-fill');
 
   let board, history, redoStack, current, gameOver, winner, lastMove;
   let cellSize = 0, padding = 0;
   let statusFlashT = null;
   let renjuMode = true;
   let currentLang = 'ko';
+  // AI 모드 관련
+  let mode = 'pvp';            // 'pvp' | 'pvc'
+  let aiColor = 'W';           // 'B' | 'W'
+  let aiDifficulty = 'medium'; // 'easy' | 'medium' | 'hard'
+  let showWinProb = true;
+  let aiBusy = false;          // AI 가 계산 중인지
+  let aiAbort = false;         // 중단 플래그
 
   const inB = (x,y) => x>=0 && y>=0 && x<SIZE && y<SIZE;
   const t = (key) => (I18N[currentLang][key] !== undefined ? I18N[currentLang][key] : key);
@@ -275,6 +433,11 @@ toc: false
   function showStart() {
     setActiveBtn('rule', renjuMode ? 'renju' : 'free');
     setActiveBtn('lang', currentLang);
+    setActiveBtn('mode', mode);
+    setActiveBtn('aiColor', aiColor);
+    setActiveBtn('aiDiff', aiDifficulty);
+    setActiveBtn('winProb', showWinProb ? 'show' : 'hide');
+    pvcOptionsEl.style.display = (mode === 'pvc') ? '' : 'none';
     applyLang();
     startOverlay.style.display = 'flex';
   }
@@ -288,6 +451,14 @@ toc: false
     gameOver = false;
     winner = null;
     lastMove = null;
+    aiAbort = true;       // 진행 중이던 AI 계산 중단
+    aiBusy = false;
+    if (aiThinkingEl) aiThinkingEl.style.display = 'none';
+    if (aiWinprobEl) {
+      aiWinprobEl.style.display = (mode === 'pvc' && showWinProb) ? '' : 'none';
+      aiWinprobValueEl.textContent = '—';
+      aiWinprobFillEl.style.width = '50%';
+    }
     render();
   }
 
@@ -375,6 +546,476 @@ toc: false
     return f;
   }
 
+  // ============================================================
+  // AI 모듈
+  // ============================================================
+  // 패턴 점수표 (B = AI/평가 대상, O = 상대, . = 빈, # = 벽)
+  // 사용자 요청: 연속 4 (BBBB) 가 갭 4 (B.BBB / BB.BB / BBB.B) 보다 명확히 우선
+  const SCORE_TABLE = [
+    ['BBBBB',   1e8],                 // 5목
+    ['.BBBB.',  5e6],                 // 활4 — 사실상 승
+    ['.BBBB#',  1e5], ['#BBBB.', 1e5], // 닫힌 4 (벽)
+    ['.BBBBO',  1e5], ['OBBBB.', 1e5], // 닫힌 4 (상대)
+    ['BB.BB',   2e4],                 // 갭 4 (단일 위협만)
+    ['B.BBB',   2e4], ['BBB.B', 2e4],
+    ['.BBB.',   3e3],                 // 활3
+    ['.BB.B.',  3e3], ['.B.BB.', 3e3],
+    ['.BBB#',   200], ['#BBB.', 200],
+    ['.BBBO',   200], ['OBBB.', 200],
+    ['.BB.',    50],                  // 활2
+    ['.B.B.',   30]
+  ];
+
+  function getAllLines(b) {
+    const lines = [];
+    for (let y = 0; y < SIZE; y++) lines.push(b[y].slice());
+    for (let x = 0; x < SIZE; x++) {
+      const col = []; for (let y = 0; y < SIZE; y++) col.push(b[y][x]);
+      lines.push(col);
+    }
+    for (let s = -(SIZE - 1); s <= SIZE - 1; s++) {
+      const d = [];
+      for (let y = 0; y < SIZE; y++) {
+        const x = y + s;
+        if (x >= 0 && x < SIZE) d.push(b[y][x]);
+      }
+      if (d.length >= 5) lines.push(d);
+    }
+    for (let s = 0; s < 2 * SIZE - 1; s++) {
+      const d = [];
+      for (let y = 0; y < SIZE; y++) {
+        const x = s - y;
+        if (x >= 0 && x < SIZE) d.push(b[y][x]);
+      }
+      if (d.length >= 5) lines.push(d);
+    }
+    return lines;
+  }
+
+  function lineToCanon(line, color) {
+    let s = '#';
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      s += (c === null) ? '.' : (c === color) ? 'B' : 'O';
+    }
+    return s + '#';
+  }
+
+  function scoreCanonical(canon) {
+    let total = 0;
+    for (let i = 0; i < SCORE_TABLE.length; i++) {
+      const pat = SCORE_TABLE[i][0], val = SCORE_TABLE[i][1];
+      let pos = -1;
+      while ((pos = canon.indexOf(pat, pos + 1)) !== -1) total += val;
+    }
+    return total;
+  }
+
+  function evalBoard(b, color) {
+    const opp = color === 'B' ? 'W' : 'B';
+    let me = 0, you = 0;
+    const lines = getAllLines(b);
+    for (let i = 0; i < lines.length; i++) {
+      me  += scoreCanonical(lineToCanon(lines[i], color));
+      you += scoreCanonical(lineToCanon(lines[i], opp));
+    }
+    // 상대 위협을 살짝 더 무겁게 (수비 우선) — 1.1배
+    return me - 1.1 * you;
+  }
+
+  function getCandidates(b, radius) {
+    const set = new Set();
+    let any = false;
+    for (let y = 0; y < SIZE; y++) {
+      for (let x = 0; x < SIZE; x++) {
+        if (b[y][x] === null) continue;
+        any = true;
+        for (let dy = -radius; dy <= radius; dy++) {
+          for (let dx = -radius; dx <= radius; dx++) {
+            const nx = x + dx, ny = y + dy;
+            if (!inB(nx, ny)) continue;
+            if (b[ny][nx] === null) set.add(ny * SIZE + nx);
+          }
+        }
+      }
+    }
+    if (!any) return [{ x: 7, y: 7 }];
+    return [...set].map(i => ({ x: i % SIZE, y: Math.floor(i / SIZE) }));
+  }
+
+  function filterRenjuForbidden(b, candidates, color) {
+    if (!renjuMode || color !== 'B') return candidates;
+    return candidates.filter(({ x, y }) => {
+      b[y][x] = 'B';
+      const f = isForbidden(b, x, y);
+      b[y][x] = null;
+      return !f;
+    });
+  }
+
+  // 자리 (x, y) 를 actorColor 가 두는 게 합법인지 (렌주+흑 금수 검사)
+  function isCellLegalFor(b, x, y, actorColor) {
+    if (!renjuMode || actorColor !== 'B') return true;
+    b[y][x] = 'B';
+    const f = isForbidden(b, x, y);
+    b[y][x] = null;
+    return !f;
+  }
+
+  // 즉시 5목 만드는 수 찾기 — actorColor 가 둘 수 있는 자리만
+  function findWinMove(b, threatColor, actorColor) {
+    if (!actorColor) actorColor = threatColor;
+    for (let y = 0; y < SIZE; y++) {
+      for (let x = 0; x < SIZE; x++) {
+        if (b[y][x] !== null) continue;
+        b[y][x] = threatColor;
+        const w = (threatColor === 'B' && renjuMode)
+                    ? (maxConsec(b, x, y, threatColor) === 5)
+                    : (maxConsec(b, x, y, threatColor) >= 5);
+        b[y][x] = null;
+        if (!w) continue;
+        if (!isCellLegalFor(b, x, y, actorColor)) continue;
+        return { x, y };
+      }
+    }
+    return null;
+  }
+
+  // 활4 만드는 수 — actorColor 가 둘 수 있는 자리만
+  function findOpen4Move(b, threatColor, actorColor) {
+    if (!actorColor) actorColor = threatColor;
+    for (let y = 0; y < SIZE; y++) {
+      for (let x = 0; x < SIZE; x++) {
+        if (b[y][x] !== null) continue;
+        b[y][x] = threatColor;
+        let isOf = false;
+        for (let i = 0; i < DIRS.length; i++) {
+          if (isOpenFourAt(b, x, y, DIRS[i][0], DIRS[i][1], threatColor)) {
+            isOf = true; break;
+          }
+        }
+        b[y][x] = null;
+        if (!isOf) continue;
+        if (!isCellLegalFor(b, x, y, actorColor)) continue;
+        return { x, y };
+      }
+    }
+    return null;
+  }
+
+  // 다중 위협 보너스 — 4-3 / 4-4 / 3-3 / 장목 / 연속 4 우대
+  // 사용자 요청: 4-3 도 4-4 와 유사한 매우 높은 점수
+  function bonusForMove(b, x, y, color) {
+    // assumes b[y][x] === color
+    let consecutiveFours = 0, gappedFours = 0, openThrees = 0;
+    let maxRun = 0;
+    for (let i = 0; i < DIRS.length; i++) {
+      const dx = DIRS[i][0], dy = DIRS[i][1];
+      const r = countConsec(b, x, y, dx, dy, color);
+      if (r > maxRun) maxRun = r;
+      if (r === 4) {
+        consecutiveFours++;            // 이 방향에서 BBBB (연속 4)
+      } else if (createsFourInDir(b, x, y, dx, dy, color)) {
+        gappedFours++;                 // 이 방향에서 갭 4 (B.BBB 등)
+      }
+      if (createsOpenThreeInDir(b, x, y, dx, dy, color)) openThrees++;
+    }
+    const totalFours = consecutiveFours + gappedFours;
+    const isBlack = color === 'B';
+    let bonus = 0;
+
+    // 5목
+    if (maxRun === 5) bonus += 1e8;
+    // 장목 (백/free 만)
+    if (maxRun >= 6 && (!renjuMode || !isBlack)) bonus += 5e7;
+
+    // 4-4 — 즉시 승 (백/free 만; 흑+렌주는 filter)
+    if (totalFours >= 2 && (!renjuMode || !isBlack)) bonus += 5e6;
+    // 4-3 — 2-3수 후 승 (사용자 요청: 4-4 와 유사한 점수)
+    if (totalFours >= 1 && openThrees >= 1) bonus += 4e6;
+    // 3-3 — 3-4수 후 승 (백/free 만)
+    if (openThrees >= 2 && (!renjuMode || !isBlack)) bonus += 1.5e6;
+
+    // 연속 4 우대 — 갭 4 보다 5배 점수
+    if (consecutiveFours >= 1) bonus += 5e4 * consecutiveFours;
+    // 갭 4 도 약간 (단일 위협)
+    if (gappedFours >= 1) bonus += 1e4 * gappedFours;
+
+    return bonus;
+  }
+
+  // 1-ply 평가 — 위치 + 다중 위협 + 패턴 점수 (try/finally 로 보드 보호)
+  function quickEval(b, x, y, color) {
+    let base, myBonus;
+    b[y][x] = color;
+    try {
+      base = evalBoard(b, color);
+      myBonus = bonusForMove(b, x, y, color);
+    } finally { b[y][x] = null; }
+
+    // 상대가 이 자리에 두면 얻는 위협 (방어 가치)
+    const opp = color === 'B' ? 'W' : 'B';
+    let oppBonus;
+    b[y][x] = opp;
+    try { oppBonus = bonusForMove(b, x, y, opp); }
+    finally { b[y][x] = null; }
+
+    // 위치 보너스 — 마지막 수 근처 + 중심 선호
+    let posBonus = 0;
+    if (lastMove) {
+      const md = Math.abs(x - lastMove.x) + Math.abs(y - lastMove.y);
+      posBonus += Math.max(0, 5 - md) * 40;
+    }
+    const cd = Math.abs(x - 7) + Math.abs(y - 7);
+    posBonus -= cd * 2;
+
+    return base + myBonus + 0.9 * oppBonus + posBonus;
+  }
+
+  // 후보 + 금수 제외. 반경 단계적 확장. 합법 수가 없으면 null
+  function getLegalCandidates(b, color, startRadius) {
+    for (let r = startRadius; r <= 7; r++) {
+      let cands = getCandidates(b, r);
+      cands = filterRenjuForbidden(b, cands, color);
+      if (cands.length > 0) return cands;
+    }
+    // 마지막 수단: 보드 전체 빈 칸 + 필터
+    const all = [];
+    for (let y = 0; y < SIZE; y++) {
+      for (let x = 0; x < SIZE; x++) {
+        if (b[y][x] === null) all.push({ x, y });
+      }
+    }
+    const filtered = filterRenjuForbidden(b, all, color);
+    return filtered.length > 0 ? filtered : null;  // 진짜 둘 곳 없음
+  }
+
+  // 쉬움 — 규칙 기반
+  function aiMoveEasy(b, color) {
+    const opp = color === 'B' ? 'W' : 'B';
+    const myWin   = findWinMove(b, color, color);    if (myWin)   return myWin;
+    const oppWin  = findWinMove(b, opp, color);      if (oppWin)  return oppWin;
+    const myOpen4 = findOpen4Move(b, color, color);  if (myOpen4) return myOpen4;
+    const oppOpen4= findOpen4Move(b, opp, color);    if (oppOpen4)return oppOpen4;
+    const cands = getLegalCandidates(b, color, 1);
+    if (!cands) return null;  // 모든 자리 금수 — AI 패배
+    return cands[Math.floor(Math.random() * cands.length)];
+  }
+
+  // 보통 — 1-ply quickEval 로 최고 수 선택 (다중 위협 보너스 포함)
+  function aiMoveMedium(b, color) {
+    const opp = color === 'B' ? 'W' : 'B';
+    const myWin   = findWinMove(b, color, color);    if (myWin)   return myWin;
+    const oppWin  = findWinMove(b, opp, color);      if (oppWin)  return oppWin;
+    const myOpen4 = findOpen4Move(b, color, color);  if (myOpen4) return myOpen4;
+    const oppOpen4= findOpen4Move(b, opp, color);    if (oppOpen4)return oppOpen4;
+    const cands = getLegalCandidates(b, color, 2);
+    if (!cands) return null;
+    let best = cands[0], bestScore = -Infinity;
+    for (const m of cands) {
+      const sc = quickEval(b, m.x, m.y, color);
+      if (sc > bestScore) { bestScore = sc; best = m; }
+    }
+    return best;
+  }
+
+  // α-β 탐색 (어려움용)
+  // 시간 초과 시 throw 'TIMEOUT' — try/finally 로 항상 보드 복원
+  function alphabeta(b, depth, alpha, beta, isMax, aiCol, radius, deadline) {
+    if (Date.now() > deadline || aiAbort) throw 'TIMEOUT';
+    if (depth === 0) return evalBoard(b, aiCol);
+    const opp = aiCol === 'B' ? 'W' : 'B';
+    const turnCol = isMax ? aiCol : opp;
+    let cands = getCandidates(b, radius);
+    cands = filterRenjuForbidden(b, cands, turnCol);
+    if (cands.length === 0) {
+      // 합법 수 0개 — 현재 플레이어 패배 (렌주에서 흑 트랩 등)
+      return turnCol === aiCol ? -1e8 : 1e8;
+    }
+    // 즉시 승리/패배 체크 (try/finally 보호)
+    for (const m of cands) {
+      b[m.y][m.x] = turnCol;
+      let w;
+      try {
+        w = maxConsec(b, m.x, m.y, turnCol) >= 5;
+      } finally { b[m.y][m.x] = null; }
+      if (w) return isMax ? (1e7 + depth) : -(1e7 + depth);
+    }
+    if (isMax) {
+      let v = -Infinity;
+      for (const m of cands) {
+        b[m.y][m.x] = turnCol;
+        let r;
+        try {
+          r = alphabeta(b, depth - 1, alpha, beta, false, aiCol, radius, deadline);
+        } finally { b[m.y][m.x] = null; }
+        if (r > v) v = r;
+        if (v > alpha) alpha = v;
+        if (alpha >= beta) break;
+      }
+      return v;
+    } else {
+      let v = Infinity;
+      for (const m of cands) {
+        b[m.y][m.x] = turnCol;
+        let r;
+        try {
+          r = alphabeta(b, depth - 1, alpha, beta, true, aiCol, radius, deadline);
+        } finally { b[m.y][m.x] = null; }
+        if (r < v) v = r;
+        if (v < beta) beta = v;
+        if (alpha >= beta) break;
+      }
+      return v;
+    }
+  }
+
+  // 어려움 — 적응적 반경 + 5초 데드라인
+  async function aiMoveHard(b, color) {
+    const HARD_DEADLINE_MS = 5000;
+    const deadline = Date.now() + HARD_DEADLINE_MS;
+    const opp = color === 'B' ? 'W' : 'B';
+
+    const myWin = findWinMove(b, color, color);   if (myWin) return myWin;
+    const oppWin = findWinMove(b, opp, color);    if (oppWin) return oppWin;
+
+    function searchOnce(radius, maxDepth) {
+      let cands = getCandidates(b, radius);
+      cands = filterRenjuForbidden(b, cands, color);
+      if (cands.length === 0) {
+        // 후보가 모두 금수면 더 넓은 반경 시도
+        const allLegal = getLegalCandidates(b, color, radius + 1);
+        if (!allLegal || allLegal.length === 0) return null;  // 진짜 둘 곳 없음
+        cands = allLegal;
+      }
+      // 1-ply quickEval 로 정렬 (α-β 효율 ↑, 다중 위협 인식)
+      const scored = cands.map(m => ({ m, s: quickEval(b, m.x, m.y, color) }))
+                          .sort((a, b) => b.s - a.s);
+
+      let best = scored[0].m, bestScore = -Infinity, alpha = -Infinity;
+      for (const { m } of scored) {
+        if (Date.now() > deadline || aiAbort) break;
+        b[m.y][m.x] = color;
+        let sc;
+        try {
+          sc = alphabeta(b, maxDepth - 1, alpha, Infinity, false, color, radius, deadline);
+        } finally { b[m.y][m.x] = null; }   // 예외에도 무조건 복원
+        if (sc > bestScore) { bestScore = sc; best = m; }
+        if (sc > alpha) alpha = sc;
+      }
+      return { move: best, score: bestScore };
+    }
+
+    // 점수 → 승률 변환 — mid-game 변화 가시화 (S=100k, clamp ±2e6)
+    // 0→50% / 10k→52.5% / 50k→62% / 100k→73% / 500k→99.3% / 4-3 이상→100%
+    function sigmoid(x) {
+      const clamped = Math.max(-2e6, Math.min(2e6, x));
+      return 1 / (1 + Math.exp(-clamped / 100000));
+    }
+
+    // 1차 — 반경 2, 깊이 4 (iterative deepening)
+    let result = null;
+    for (let d = 1; d <= 4; d++) {
+      try {
+        setAIProgress('반경 2 · 깊이 ' + d);
+        const r = searchOnce(2, d);
+        if (r) result = r;
+        await yieldUI();
+        if (Date.now() > deadline) break;
+      } catch(e) { if (e === 'TIMEOUT') break; else throw e; }
+    }
+
+    // 2차 — 불리하면 반경 3
+    if (result && sigmoid(result.score) < 0.50 && Date.now() < deadline) {
+      for (let d = 1; d <= 4; d++) {
+        try {
+          setAIProgress('반경 3 · 깊이 ' + d);
+          const r = searchOnce(3, d);
+          if (r) result = r;
+          await yieldUI();
+          if (Date.now() > deadline) break;
+        } catch(e) { if (e === 'TIMEOUT') break; else throw e; }
+      }
+    }
+
+    // 3차 — 크게 불리하면 반경 4 (깊이는 절약)
+    if (result && sigmoid(result.score) < 0.40 && Date.now() < deadline) {
+      for (let d = 1; d <= 3; d++) {
+        try {
+          setAIProgress('반경 4 · 깊이 ' + d);
+          const r = searchOnce(4, d);
+          if (r) result = r;
+          await yieldUI();
+          if (Date.now() > deadline) break;
+        } catch(e) { if (e === 'TIMEOUT') break; else throw e; }
+      }
+    }
+
+    if (result) updateWinProb(result.score, color);
+    return result ? result.move : aiMoveMedium(b, color);
+  }
+
+  function setAIProgress(text) { if (aiProgressEl) aiProgressEl.textContent = text; }
+  function yieldUI() { return new Promise(r => setTimeout(r, 0)); }
+
+  function updateWinProb(score, aiCol) {
+    if (!showWinProb) return;
+    const clamped = Math.max(-2e6, Math.min(2e6, score));
+    const p = 1 / (1 + Math.exp(-clamped / 100000));
+    aiWinprobValueEl.textContent = (p * 100).toFixed(0) + '%';
+    aiWinprobFillEl.style.width = (p * 100).toFixed(1) + '%';
+  }
+
+  async function runAI() {
+    if (aiBusy || gameOver || mode !== 'pvc' || current !== aiColor) return;
+    aiBusy = true;
+    aiAbort = false;
+    aiThinkingEl.style.display = '';
+    setAIProgress('');
+    await yieldUI();
+
+    let move = null;
+    try {
+      if (aiDifficulty === 'easy')        move = aiMoveEasy(board, aiColor);
+      else if (aiDifficulty === 'medium') move = aiMoveMedium(board, aiColor);
+      else                                move = await aiMoveHard(board, aiColor);
+    } catch(e) {
+      console.warn('AI fallback:', e);
+      try { move = aiMoveMedium(board, aiColor); } catch(_) {}
+    }
+
+    // 합법 수가 없는 경우 (예: 렌주에서 흑이 모든 자리 금수)
+    if (!move) {
+      gameOver = true;
+      winner = (aiColor === 'B') ? 'W' : 'B';
+      aiBusy = false;
+      aiThinkingEl.style.display = 'none';
+      if (showWinProb) updateWinProb(-1e8, aiColor);  // 0%
+      flashStatus(aiColor === 'B'
+        ? '🚫 흑(컴퓨터)이 둘 자리가 없습니다 — 백 승!'
+        : '🚫 백(컴퓨터)이 둘 자리가 없습니다 — 흑 승!');
+      render();
+      return;
+    }
+
+    // 승률 표시 (hard 는 search 내부에서 이미 갱신)
+    if (showWinProb && aiDifficulty !== 'hard') {
+      board[move.y][move.x] = aiColor;
+      const sc = evalBoard(board, aiColor) + bonusForMove(board, move.x, move.y, aiColor);
+      board[move.y][move.x] = null;
+      updateWinProb(sc, aiColor);
+    }
+
+    try {
+      if (!aiAbort) placeStone(move.x, move.y);
+    } finally {
+      aiBusy = false;
+      aiThinkingEl.style.display = 'none';
+    }
+  }
+
+  // ============================================================
+
   function placeStone(x, y) {
     if (gameOver || !inB(x,y) || board[y][x] !== null) return;
 
@@ -407,32 +1048,61 @@ toc: false
     else { current = (current === 'B') ? 'W' : 'B'; }
 
     render();
+
+    // PvC: 인간이 두고 나면 AI 차례 자동 진행
+    if (mode === 'pvc' && !gameOver && !aiBusy && current === aiColor) {
+      setTimeout(runAI, 80);
+    }
+  }
+
+  function refreshAIWinProb() {
+    if (mode !== 'pvc' || !showWinProb) return;
+    // 보드 상태에서 AI 관점의 평가 — 마지막 수 보너스도 반영
+    let score = evalBoard(board, aiColor);
+    if (lastMove && lastMove.color === aiColor) {
+      score += bonusForMove(board, lastMove.x, lastMove.y, aiColor);
+    }
+    updateWinProb(score, aiColor);
   }
 
   function undo() {
-    if (history.length === 0) return;
-    const m = history.pop();
-    board[m.y][m.x] = null;
-    redoStack.push(m);
-    current = m.color;
+    if (aiBusy || history.length === 0) return;
+    // PvC 에서는 AI 응수까지 함께 되돌리기 위해 두 수 pop
+    const popsNeeded = (mode === 'pvc' && history.length >= 2) ? 2 : 1;
+    for (let i = 0; i < popsNeeded; i++) {
+      if (history.length === 0) break;
+      const m = history.pop();
+      board[m.y][m.x] = null;
+      redoStack.push(m);
+      current = m.color;
+    }
     gameOver = false;
     winner = null;
     lastMove = history.length ? history[history.length-1] : null;
+    refreshAIWinProb();
     render();
   }
 
   function redo() {
-    if (redoStack.length === 0) return;
-    const m = redoStack.pop();
-    board[m.y][m.x] = m.color;
-    history.push(m);
-    lastMove = m;
-    const run = maxConsec(board, m.x, m.y, m.color);
-    let win = false;
-    if (m.color === 'B' && renjuMode) { if (run === 5) win = true; }
-    else { if (run >= 5) win = true; }
-    if (win) { gameOver = true; winner = m.color; }
-    else { current = (m.color === 'B') ? 'W' : 'B'; gameOver = false; winner = null; }
+    if (aiBusy || redoStack.length === 0) return;
+    const pushesNeeded = (mode === 'pvc' && redoStack.length >= 2) ? 2 : 1;
+    for (let i = 0; i < pushesNeeded; i++) {
+      if (redoStack.length === 0) break;
+      const m = redoStack.pop();
+      board[m.y][m.x] = m.color;
+      history.push(m);
+      lastMove = m;
+      const run = maxConsec(board, m.x, m.y, m.color);
+      const isWin = (m.color === 'B' && renjuMode) ? (run === 5) : (run >= 5);
+      if (isWin) {
+        gameOver = true; winner = m.color;
+        break;  // 게임 끝났으면 추가 redo 안 함
+      } else {
+        current = (m.color === 'B') ? 'W' : 'B';
+        gameOver = false; winner = null;
+      }
+    }
+    refreshAIWinProb();
     render();
   }
 
@@ -578,6 +1248,9 @@ toc: false
   // Events
   canvas.addEventListener('click', (e) => {
     if (gameOver) return;
+    // PvC 에서 AI 차례 (계산 중이거나 곧 시작) 에는 사람 클릭 차단
+    if (mode === 'pvc' && current === aiColor) return;
+    if (aiBusy) return;
     const rect = canvas.getBoundingClientRect();
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
@@ -585,13 +1258,22 @@ toc: false
     placeStone(x, y);
   });
 
-  resetBtn.addEventListener('click', () => init());
+  resetBtn.addEventListener('click', () => {
+    init();
+    // PvC + AI가 흑(선공)인 경우 자동 첫 수
+    if (mode === 'pvc' && current === aiColor && !gameOver) {
+      setTimeout(runAI, 200);
+    }
+  });
   undoBtn.addEventListener('click', undo);
   redoBtn.addEventListener('click', redo);
   settingsBtn.addEventListener('click', () => {
     if (history.length > 0 && !gameOver) {
       if (!confirm(t('confirmAbandon'))) return;
     }
+    aiAbort = true;
+    aiBusy = false;
+    aiThinkingEl.style.display = 'none';
     showStart();
   });
   window.addEventListener('resize', () => render());
@@ -606,16 +1288,34 @@ toc: false
       currentLang = b.dataset.value;
       applyLang();
     }
+    if (group === 'mode') {
+      pvcOptionsEl.style.display = (b.dataset.value === 'pvc') ? '' : 'none';
+    }
   });
 
   startBtn.addEventListener('click', () => {
     const ruleVal = getActiveValue('rule') || 'renju';
     const langVal = getActiveValue('lang') || 'ko';
+    const modeVal = getActiveValue('mode') || 'pvp';
     renjuMode = (ruleVal === 'renju');
     currentLang = langVal;
+    mode = modeVal;
+    if (mode === 'pvc') {
+      let acVal = getActiveValue('aiColor') || 'W';
+      if (acVal === 'random') acVal = (Math.random() < 0.5) ? 'B' : 'W';
+      aiColor = acVal;
+      aiDifficulty = getActiveValue('aiDiff') || 'medium';
+      showWinProb = (getActiveValue('winProb') || 'show') === 'show';
+    }
     applyLang();
     init();
     hideStart();
+    // 승률 패널 표시 여부
+    aiWinprobEl.style.display = (mode === 'pvc' && showWinProb) ? '' : 'none';
+    // AI 가 흑(선공)이면 즉시 첫 수
+    if (mode === 'pvc' && current === aiColor && !gameOver) {
+      setTimeout(runAI, 200);
+    }
   });
 
   // First load: show start screen, prepare default lang
