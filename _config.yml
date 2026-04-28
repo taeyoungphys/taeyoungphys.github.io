@@ -18,6 +18,16 @@ og_image: "/assets/images/og-image.png"
 twitter:
   username: "taeyoungphys"
 
+# Firebase (Sudoku 전역 리더보드용)
+# 주의: 이 키들은 클라이언트 사이드에 노출되도록 설계된 공개 키입니다.
+# 보안은 Firebase Realtime Database 의 보안 규칙으로 강제됩니다.
+firebase:
+  apiKey: "AIzaSyDqn9XkGAB0OjR1KHb919Ys36y1jrGzg4A"
+  authDomain: "leaderboard-e5515.firebaseapp.com"
+  databaseURL: "https://leaderboard-e5515-default-rtdb.asia-southeast1.firebasedatabase.app"
+  projectId: "leaderboard-e5515"
+  appId: "1:778268708310:web:19868f26022eeb422d6877"
+
 # ============================================================
 # 빌드 설정
 # ============================================================
