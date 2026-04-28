@@ -5,41 +5,49 @@
      - 우하단: 친구 floating 카드 (태블릿 이하, < 1024px)
      ============================================================ -->
 
-<!-- ===== 언어 전환 (우상단) — 항상 보이는 직접 링크 (이벤트 의존성 0) ===== -->
+<!-- ===== 언어 전환 — Liquid 로 서버 사이드 렌더된 진짜 URL ===== -->
+{%- assign cur_path = page.url -%}
+{%- assign tr_host = "taeyoungphys-github-io.translate.goog" -%}
+{%- assign or_host = "taeyoungphys.github.io" -%}
+
 <div id="lang-switcher" class="lang-switcher" aria-label="Language">
   <i class="fas fa-globe lang-switcher__icon" aria-hidden="true"></i>
-  <a href="#" data-lang="ko" title="한국어 (원문)">KR</a>
-  <a href="#" data-lang="en" title="English">EN</a>
-  <a href="#" data-lang="ja" title="日本語">JA</a>
-  <a href="#" data-lang="zh-CN" title="中文">CN</a>
-  <a href="#" data-lang="es" title="Español">ES</a>
-  <a href="#" data-lang="fr" title="Français">FR</a>
-  <a href="#" data-lang="de" title="Deutsch">DE</a>
+  <a href="https://{{ or_host }}{{ cur_path }}" data-lang="ko" title="한국어 (원문)">KR</a>
+  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=en&_x_tr_hl=en"       data-lang="en"    title="English">EN</a>
+  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=ja&_x_tr_hl=ja"       data-lang="ja"    title="日本語">JA</a>
+  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=zh-CN&_x_tr_hl=zh-CN" data-lang="zh-CN" title="中文">CN</a>
+  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=es&_x_tr_hl=es"       data-lang="es"    title="Español">ES</a>
+  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=fr&_x_tr_hl=fr"       data-lang="fr"    title="Français">FR</a>
+  <a href="https://{{ tr_host }}{{ cur_path }}?_x_tr_sl=ko&_x_tr_tl=de&_x_tr_hl=de"       data-lang="de"    title="Deutsch">DE</a>
 </div>
 
 <script>
 (function() {
-  var ORIGIN = 'taeyoungphys.github.io';
-  var TR_KEYS = ['_x_tr_sl','_x_tr_tl','_x_tr_hl','_x_tr_pto','_x_tr_hist'];
+  var sw = document.getElementById('lang-switcher');
+  if (!sw) return;
 
-  document.querySelectorAll('#lang-switcher a[data-lang]').forEach(function(a) {
-    var lang = a.getAttribute('data-lang');
-    var path = location.pathname;
-    var hash = location.hash;
-    // 기존 _x_tr_* 파라미터 제거, 나머지 쿼리는 보존
-    var params = new URLSearchParams(location.search);
-    TR_KEYS.forEach(function(k){ params.delete(k); });
+  // CRITICAL: <body>의 직속 자식으로 옮김 → 어떤 부모 stacking context 도 영향 못 줌
+  if (sw.parentElement !== document.body) {
+    document.body.appendChild(sw);
+  }
 
-    if (lang === 'ko') {
-      var search = params.toString();
-      a.href = 'https://' + ORIGIN + path + (search ? '?' + search : '') + hash;
-    } else {
-      var host = ORIGIN.replace(/\./g, '-') + '.translate.goog';
-      params.set('_x_tr_sl', 'ko');
-      params.set('_x_tr_tl', lang);
-      params.set('_x_tr_hl', lang);
-      a.href = 'https://' + host + path + '?' + params.toString() + hash;
-    }
+  // 다중 이벤트 + capture phase — 어떤 글로벌 핸들러가 가로채도 통과
+  var navigating = false;
+  function navigateFromEvent(e) {
+    if (navigating) return;
+    if (e.button !== undefined && e.button !== 0) return;
+    var a = e.target.closest && e.target.closest('a[data-lang]');
+    if (!a) return;
+    var url = a.getAttribute('href');
+    if (!url || url === '#') return;
+    navigating = true;
+    try { e.preventDefault();      } catch(_) {}
+    try { e.stopPropagation();     } catch(_) {}
+    try { e.stopImmediatePropagation(); } catch(_) {}
+    window.location.href = url;
+  }
+  ['pointerdown', 'mousedown', 'click', 'touchstart'].forEach(function(ev) {
+    sw.addEventListener(ev, navigateFromEvent, true);
   });
 })();
 </script>
