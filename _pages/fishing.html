@@ -1,0 +1,1158 @@
+---
+title: "Fishing Puzzle"
+permalink: /playground/fishing/
+layout: single
+author_profile: false
+toc: false
+---
+
+<style>
+  .fishing-app { max-width: 720px; margin: 0 auto; position: relative; }
+  .fishing-status {
+    padding: 0.55rem 0.85rem; margin: 0 0 0.7rem;
+    background: rgba(59,130,246,0.12);
+    border-left: 3px solid #3b82f6;
+    border-radius: 4px; font-weight: 500; font-size: 0.95rem;
+  }
+  .fishing-controls {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+    align-items: center; margin-bottom: 0.7rem;
+  }
+  .fishing-controls button {
+    padding: 0.4rem 0.85rem;
+    border: 1px solid #555;
+    background: #1e1e1e; color: #eee;
+    border-radius: 6px; cursor: pointer; font-size: 0.88rem;
+    font-family: inherit;
+  }
+  .fishing-controls button:hover { background: #333; }
+  .fishing-controls button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .fishing-info {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    background: rgba(59,130,246,0.1);
+    color: #cfd8e6;
+  }
+  .fishing-timer {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 600;
+  }
+
+  /* ===== 보드 ===== */
+  .fishing-board-wrap {
+    position: relative;
+    width: 100%; max-width: 520px;
+    margin: 0 auto;
+    aspect-ratio: 1;
+    background: #d8b173;
+    padding: 6px;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+  .fishing-board {
+    display: grid;
+    gap: 1px;
+    background: #8b6f47;
+    width: 100%; height: 100%;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  .fishing-board .cell {
+    background: #f4e7cb;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    position: relative;
+    font-size: clamp(0.9rem, 3.5vw, 1.5rem);
+    user-select: none;
+  }
+  .fishing-board .cell.number {
+    background: #ffffff;
+    color: #1d4ed8;
+    font-weight: 700;
+  }
+  .fishing-board .cell.number .cell-icon {
+    position: absolute;
+    top: 2px; right: 3px;
+    font-size: 0.5em;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  .fishing-board .cell.fish {
+    background: #cfe5ff;
+    font-size: 1.3em;
+  }
+  .fishing-board .cell.in-current-path {
+    box-shadow: inset 0 0 0 2px rgba(59,130,246,0.5);
+  }
+  .fishing-board .cell.is-hint {
+    outline: 3px solid #fbbf24;
+    outline-offset: -3px;
+    z-index: 2;
+  }
+  .fishing-board .cell.dragging-over {
+    background: rgba(255, 220, 100, 0.3);
+  }
+
+  /* SVG 경로 오버레이 */
+  .fishing-paths {
+    position: absolute;
+    top: 6px; left: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .fishing-shortcuts {
+    margin-top: 0.7rem;
+    font-size: 0.78rem;
+    background: rgba(0,0,0,0.22);
+    border-radius: 4px;
+    padding: 0.55rem 0.7rem;
+    line-height: 1.7;
+  }
+  .fishing-shortcuts .key {
+    display: inline-block;
+    background: #333; color: #ddd;
+    padding: 1px 6px; border-radius: 3px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    border: 1px solid #555;
+    margin-right: 0.25rem;
+  }
+
+  /* ===== 오버레이 ===== */
+  .fishing-overlay {
+    position: absolute; inset: 0;
+    background: rgba(15,15,15,0.94);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 2rem;
+    border-radius: 6px;
+  }
+  .fishing-card {
+    background: #1c1c1c;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 1.6rem 1.8rem;
+    width: 380px; max-width: 92%;
+    color: #eee;
+  }
+  .fishing-card h2 { margin: 0 0 0.3rem; font-size: 1.4rem; }
+  .start-sub { margin: 0 0 1.1rem; opacity: 0.75; font-size: 0.9rem; }
+  .start-opt-group { margin-bottom: 1.1rem; }
+  .start-opt-label {
+    font-size: 0.78rem; text-transform: uppercase;
+    letter-spacing: 0.05em; opacity: 0.6;
+    margin-bottom: 0.4rem;
+  }
+  .start-opt-radios { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .opt-btn {
+    background: transparent;
+    border: 1px solid #555;
+    color: #ddd;
+    padding: 0.42rem 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.12s ease;
+    font-family: inherit;
+  }
+  .opt-btn:hover { background: rgba(255,255,255,0.06); border-color: #777; }
+  .opt-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+  }
+  .opt-btn.locked {
+    opacity: 0.35;
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+  .start-btn-primary {
+    width: 100%;
+    padding: 0.65rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-top: 0.4rem;
+  }
+  .start-btn-primary:hover { background: #2563eb; }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 32px; height: 32px;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: fishing-spin 0.9s linear infinite;
+    margin: 0.5rem 0;
+  }
+  @keyframes fishing-spin { to { transform: rotate(360deg); } }
+  .gen-progress-text {
+    font-size: 0.85rem; opacity: 0.8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .win-time {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.3rem; font-weight: 600; color: #4f9bff;
+    margin: 0.4rem 0 1rem;
+  }
+</style>
+
+<div class="fishing-app">
+
+  <div class="fishing-status" id="fishing-status"></div>
+
+  <div class="fishing-controls">
+    <span class="fishing-info" id="fishing-diff-info"></span>
+    <span class="fishing-info"><i>⏱</i> <span class="fishing-timer" id="fishing-timer">00:00</span></span>
+    <button id="fishing-newpuzzle" type="button" data-i18n="newPuzzle"></button>
+    <button id="fishing-restart"   type="button" data-i18n="restart"></button>
+    <button id="fishing-undo"      type="button" data-i18n="undo"></button>
+    <button id="fishing-hint"      type="button" data-i18n="hint"></button>
+    <button id="fishing-settings"  type="button" data-i18n="settings"></button>
+  </div>
+
+  <div class="fishing-board-wrap">
+    <div class="fishing-board" id="fishing-board"></div>
+    <svg class="fishing-paths" id="fishing-paths" preserveAspectRatio="none"></svg>
+  </div>
+
+  <div class="fishing-shortcuts" id="fishing-shortcuts"></div>
+
+  <!-- ===== Start overlay ===== -->
+  <div class="fishing-overlay" id="fishing-start">
+    <div class="fishing-card">
+      <h2 data-i18n="startTitle"></h2>
+      <p class="start-sub" data-i18n="startSubtitle"></p>
+
+      <div class="start-opt-group">
+        <div class="start-opt-label" data-i18n="diffLabel"></div>
+        <div class="start-opt-radios">
+          <button type="button" class="opt-btn active" data-group="diff" data-value="easy"><span data-i18n="diffEasy"></span></button>
+          <button type="button" class="opt-btn locked" data-group="diff" data-value="medium" disabled><span data-i18n="diffMedium"></span></button>
+          <button type="button" class="opt-btn locked" data-group="diff" data-value="hard" disabled><span data-i18n="diffHard"></span></button>
+          <button type="button" class="opt-btn locked" data-group="diff" data-value="expert" disabled><span data-i18n="diffExpert"></span></button>
+        </div>
+      </div>
+
+      <div class="start-opt-group">
+        <div class="start-opt-label" data-i18n="langLabel"></div>
+        <div class="start-opt-radios">
+          <button type="button" class="opt-btn active" data-group="lang" data-value="ko">한국어</button>
+          <button type="button" class="opt-btn"        data-group="lang" data-value="en">English</button>
+        </div>
+      </div>
+
+      <button id="start-btn" class="start-btn-primary" data-i18n="startBtn"></button>
+    </div>
+  </div>
+
+  <!-- ===== Loading overlay ===== -->
+  <div class="fishing-overlay" id="fishing-loading" style="display:none">
+    <div class="fishing-card">
+      <h2 data-i18n="generating"></h2>
+      <div class="loading-spinner"></div>
+      <div class="gen-progress-text" id="gen-progress-text">0</div>
+    </div>
+  </div>
+
+  <!-- ===== Win overlay ===== -->
+  <div class="fishing-overlay" id="fishing-win" style="display:none">
+    <div class="fishing-card">
+      <h2>🎉 <span data-i18n="winTitle"></span></h2>
+      <p class="start-sub" data-i18n="winSub"></p>
+      <div class="win-time" id="win-time">00:00</div>
+      <button id="win-newpuzzle" class="start-btn-primary" data-i18n="newPuzzle"></button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  // ============================================================
+  // i18n
+  // ============================================================
+  const I18N = {
+    ko: {
+      startTitle: '낚시 퍼즐',
+      startSubtitle: '난이도와 언어를 선택하세요',
+      diffLabel: '난이도',
+      diffEasy: 'Easy',
+      diffMedium: 'Medium (준비 중)',
+      diffHard: 'Hard (준비 중)',
+      diffExpert: 'Expert (준비 중)',
+      langLabel: '언어 / Language',
+      startBtn: '게임 시작',
+      generating: '퍼즐 생성 중...',
+      restart: '재시작',
+      undo: '← 한 칸 뒤로',
+      hint: '힌트',
+      newPuzzle: '새 퍼즐',
+      settings: '설정',
+      diffPrefix: '난이도: ',
+      statusPlaying: '🎣 숫자칸에서 시작해서 물고기 🐟 까지 길을 그어요',
+      statusGenerating: '퍼즐 생성 중...',
+      winTitle: '해결 완료!',
+      winSub: '소요 시간',
+      confirmAbandon: '진행 중인 퍼즐을 포기하고 설정 화면으로 돌아갈까요?',
+      shortcutHeader: '조작법',
+      kStart:  '숫자 칸 클릭으로 경로 시작',
+      kExtend: '인접 칸 클릭/드래그로 연장',
+      kEnd:    '물고기에 도달하면 경로 완성',
+      kUndo:   '한 칸 되돌리기',
+      kHint:   '정답 한 칸 미리보기'
+    },
+    en: {
+      startTitle: 'Fishing Puzzle',
+      startSubtitle: 'Choose difficulty and language',
+      diffLabel: 'Difficulty',
+      diffEasy: 'Easy',
+      diffMedium: 'Medium (coming)',
+      diffHard: 'Hard (coming)',
+      diffExpert: 'Expert (coming)',
+      langLabel: 'Language',
+      startBtn: 'Start',
+      generating: 'Generating puzzle...',
+      restart: 'Restart',
+      undo: '← Undo',
+      hint: 'Hint',
+      newPuzzle: 'New puzzle',
+      settings: 'Settings',
+      diffPrefix: 'Difficulty: ',
+      statusPlaying: '🎣 Start from a number, draw a line to a fish 🐟',
+      statusGenerating: 'Generating puzzle...',
+      winTitle: 'Solved!',
+      winSub: 'Time',
+      confirmAbandon: 'Abandon current puzzle and return to settings?',
+      shortcutHeader: 'Controls',
+      kStart:  'Click number to start path',
+      kExtend: 'Click/drag adjacent cells to extend',
+      kEnd:    'Reach a fish to complete',
+      kUndo:   'Step back one cell',
+      kHint:   'Reveal one solution cell'
+    }
+  };
+
+  let currentLang = 'ko';
+  const t = (k) => (I18N[currentLang][k] !== undefined ? I18N[currentLang][k] : k);
+
+  // ============================================================
+  // 색상 팔레트 (경로별)
+  // ============================================================
+  const PATH_COLORS = [
+    '#ef4444', '#f59e0b', '#10b981', '#3b82f6',
+    '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
+    '#f97316', '#a855f7', '#14b8a6', '#dc2626'
+  ];
+
+  // ============================================================
+  // 난이도 설정 (Easy 만 활성)
+  // ============================================================
+  const DIFFICULTY_PARAMS = {
+    easy:   { N: 6, K: [5, 7], maxNum: 8,  minReach: 1.0 },
+    medium: { N: 7, K: [7, 9], maxNum: 9,  minReach: 1.5 },
+    hard:   { N: 9, K: [10, 13], maxNum: 11, minReach: 2.0 },
+    expert: { N: 11, K: [14, 18], maxNum: 13, minReach: 2.5 }
+  };
+
+  // ============================================================
+  // 게임 상태
+  // ============================================================
+  let N;                    // 격자 크기
+  let puzzle;               // 2D — { type: 'empty'|'number'|'fish', value? }
+  let solution;             // 정답 경로들 [{numberPos, fishPos, length, cells}]
+  let userPaths;            // pathId(number) → { cells: [{x,y}], complete: bool }
+  let cellOwner;            // 2D — pathId or null (어떤 경로가 이 셀을 차지)
+  let activePathId;         // 현재 그리고 있는 경로 id (= number 의 인덱스)
+  let isDragging;           // 드래그 중 플래그
+  let difficulty = 'easy';
+  let elapsedSec = 0;
+  let timerStart = 0;
+  let timerInterval = null;
+  let won = false;
+  let hintCells = [];       // 힌트로 표시 중인 셀들
+  let genAttempts = 0;
+
+  // ============================================================
+  // DOM refs
+  // ============================================================
+  const boardEl    = document.getElementById('fishing-board');
+  const pathsEl    = document.getElementById('fishing-paths');
+  const statusEl   = document.getElementById('fishing-status');
+  const diffInfoEl = document.getElementById('fishing-diff-info');
+  const timerEl    = document.getElementById('fishing-timer');
+  const newBtn     = document.getElementById('fishing-newpuzzle');
+  const restartBtn = document.getElementById('fishing-restart');
+  const undoBtn    = document.getElementById('fishing-undo');
+  const hintBtn    = document.getElementById('fishing-hint');
+  const settingsBtn= document.getElementById('fishing-settings');
+  const shortcutsEl= document.getElementById('fishing-shortcuts');
+  const startOverlay = document.getElementById('fishing-start');
+  const startBtn   = document.getElementById('start-btn');
+  const loadingOverlay = document.getElementById('fishing-loading');
+  const genProgressEl = document.getElementById('gen-progress-text');
+  const winOverlay = document.getElementById('fishing-win');
+  const winNewBtn  = document.getElementById('win-newpuzzle');
+  const winTimeEl  = document.getElementById('win-time');
+
+  // ============================================================
+  // 유틸
+  // ============================================================
+  const inB = (x, y) => x >= 0 && y >= 0 && x < N && y < N;
+  const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  function key(x, y) { return y * N + x; }
+
+  // ============================================================
+  // Hamiltonian path 생성 (Warnsdorff 휴리스틱)
+  // ============================================================
+  function generateHamiltonianPath(n) {
+    const visited = Array.from({length: n}, () => Array(n).fill(false));
+    const path = [];
+    const sx = Math.floor(Math.random() * n);
+    const sy = Math.floor(Math.random() * n);
+    let depth = 0;
+    const maxDepth = n * n * 30;  // 백트랙 시도 한도
+
+    function neighbors(x, y) {
+      const out = [];
+      for (const [dx, dy] of DIRS) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
+        if (visited[ny][nx]) continue;
+        let deg = 0;
+        for (const [ddx, ddy] of DIRS) {
+          const nnx = nx + ddx, nny = ny + ddy;
+          if (nnx >= 0 && nny >= 0 && nnx < n && nny < n && !visited[nny][nnx]) deg++;
+        }
+        out.push({ x: nx, y: ny, deg });
+      }
+      out.sort((a, b) => a.deg - b.deg);
+      // 동률 셔플
+      for (let i = 1; i < out.length; i++) {
+        if (out[i].deg === out[i-1].deg && Math.random() < 0.4) {
+          [out[i], out[i-1]] = [out[i-1], out[i]];
+        }
+      }
+      return out;
+    }
+
+    function dfs(x, y) {
+      if (++depth > maxDepth) return false;
+      visited[y][x] = true;
+      path.push({ x, y });
+      if (path.length === n * n) return true;
+      const ns = neighbors(x, y);
+      for (const nb of ns) {
+        if (dfs(nb.x, nb.y)) return true;
+      }
+      visited[y][x] = false;
+      path.pop();
+      return false;
+    }
+
+    if (dfs(sx, sy)) return path;
+    return null;
+  }
+
+  // ============================================================
+  // 경로를 K 개로 자르기
+  // ============================================================
+  function cutPath(hamPath, K, minLen, maxLen) {
+    const total = hamPath.length;
+    if (K * minLen > total || K * maxLen < total) return null;
+    // 각 조각 길이를 [minLen, maxLen] 안에서 무작위 분배 (합 = total)
+    const lens = Array(K).fill(minLen);
+    let remaining = total - K * minLen;
+    const shuffleAttempt = 200;
+    for (let attempt = 0; attempt < shuffleAttempt && remaining > 0; attempt++) {
+      const i = Math.floor(Math.random() * K);
+      if (lens[i] < maxLen) { lens[i]++; remaining--; }
+    }
+    if (remaining > 0) return null;
+    // 누적해서 분할 인덱스 만들기
+    const pieces = [];
+    let start = 0;
+    for (const L of lens) {
+      pieces.push(hamPath.slice(start, start + L));
+      start += L;
+    }
+    return pieces;
+  }
+
+  // ============================================================
+  // 솔루션 → 퍼즐 객체
+  // ============================================================
+  function buildPuzzleFromPieces(pieces, n) {
+    const p = Array.from({length: n}, () => Array.from({length: n}, () => ({ type: 'empty' })));
+    const sol = [];
+    for (const piece of pieces) {
+      const numAtStart = Math.random() < 0.5;
+      const numberPos = numAtStart ? piece[0] : piece[piece.length - 1];
+      const fishPos   = numAtStart ? piece[piece.length - 1] : piece[0];
+      const length    = piece.length - 1;  // 사용자 정의: 숫자칸 제외
+      p[numberPos.y][numberPos.x] = { type: 'number', value: length };
+      p[fishPos.y][fishPos.x]     = { type: 'fish' };
+      sol.push({
+        numberPos, fishPos, length,
+        cells: numAtStart ? piece.slice() : piece.slice().reverse()
+      });
+    }
+    return { puzzle: p, solution: sol };
+  }
+
+  // ============================================================
+  // 솔버 — 유일해 검증
+  // ============================================================
+  function countSolutions(puzzleGrid, n, limit) {
+    const numbers = [];
+    const fishList = [];
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        const c = puzzleGrid[y][x];
+        if (c.type === 'number') numbers.push({ x, y, length: c.value });
+        else if (c.type === 'fish') fishList.push({ x, y });
+      }
+    }
+    if (numbers.length !== fishList.length) return 0;
+
+    const used = Array.from({length: n}, () => Array(n).fill(false));
+    // 모든 숫자 / 물고기 셀을 처음부터 used 로 표시
+    for (const num of numbers) used[num.y][num.x] = true;
+    for (const f of fishList) used[f.y][f.x] = true;
+
+    let count = 0;
+    const fishUsed = new Set();
+
+    function findPathsAndRecurse(start, end, length, onComplete) {
+      // start, end 모두 used. 길이 = end 포함, start 제외 — length 만큼 이동.
+      function dfs(cx, cy, remaining) {
+        if (count >= limit) return;
+        if (remaining === 0) {
+          if (cx === end.x && cy === end.y) onComplete();
+          return;
+        }
+        const md = Math.abs(cx - end.x) + Math.abs(cy - end.y);
+        if (md > remaining) return;
+        for (const [dx, dy] of DIRS) {
+          if (count >= limit) return;
+          const nx = cx + dx, ny = cy + dy;
+          if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
+          if (used[ny][nx]) {
+            if (remaining === 1 && nx === end.x && ny === end.y) {
+              dfs(nx, ny, 0);
+            }
+            continue;
+          }
+          used[ny][nx] = true;
+          dfs(nx, ny, remaining - 1);
+          used[ny][nx] = false;
+        }
+      }
+      dfs(start.x, start.y, length);
+    }
+
+    function backtrack(idx) {
+      if (count >= limit) return;
+      if (idx === numbers.length) {
+        // 모든 칸 채워졌는지 검증
+        for (let y = 0; y < n; y++)
+          for (let x = 0; x < n; x++)
+            if (!used[y][x]) return;
+        count++;
+        return;
+      }
+      const num = numbers[idx];
+      for (let i = 0; i < fishList.length; i++) {
+        if (count >= limit) return;
+        if (fishUsed.has(i)) continue;
+        fishUsed.add(i);
+        findPathsAndRecurse(num, fishList[i], num.length, () => {
+          backtrack(idx + 1);
+        });
+        fishUsed.delete(i);
+      }
+    }
+
+    backtrack(0);
+    return count;
+  }
+
+  // ============================================================
+  // 재미 메트릭 — 각 물고기에서 도달 가능한 (숫자, 길이) 쌍 평균
+  // ============================================================
+  function fishReachabilityScore(puzzleGrid, n) {
+    const numbers = [];
+    const fishList = [];
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        const c = puzzleGrid[y][x];
+        if (c.type === 'number') numbers.push({ x, y, length: c.value });
+        else if (c.type === 'fish') fishList.push({ x, y });
+      }
+    }
+    let totalReach = 0;
+    for (const f of fishList) {
+      let count = 0;
+      for (const num of numbers) {
+        const md = Math.abs(num.x - f.x) + Math.abs(num.y - f.y);
+        if (md <= num.length && (num.length - md) % 2 === 0) {
+          // 패리티 검사: 거리가 짝수만큼 차이여야 도달 가능
+          count++;
+        }
+      }
+      totalReach += count;
+    }
+    return totalReach / fishList.length;
+  }
+
+  // ============================================================
+  // 퍼즐 생성 — Snake-cut + 재미 + 유일해 검증
+  // ============================================================
+  async function generatePuzzle(diff, onProgress) {
+    const params = DIFFICULTY_PARAMS[diff];
+    const n = params.N;
+    const total = n * n;
+    const maxAttempts = 100;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      if (onProgress) onProgress(attempt);
+      await new Promise(r => setTimeout(r, 0));  // UI yield
+
+      const ham = generateHamiltonianPath(n);
+      if (!ham || ham.length !== total) continue;
+
+      // K 후보 무작위
+      const Kmin = params.K[0], Kmax = params.K[1];
+      for (let kAttempt = 0; kAttempt < 5; kAttempt++) {
+        const K = Kmin + Math.floor(Math.random() * (Kmax - Kmin + 1));
+        const minLen = 2;                    // 숫자값 ≥ 1
+        const maxLen = params.maxNum + 1;    // 숫자값 ≤ maxNum
+        const pieces = cutPath(ham, K, minLen, maxLen);
+        if (!pieces) continue;
+
+        const { puzzle: p, solution: sol } = buildPuzzleFromPieces(pieces, n);
+
+        // 재미 메트릭 통과 확인
+        const reach = fishReachabilityScore(p, n);
+        if (reach < params.minReach) continue;
+
+        // 유일해 검증
+        const cnt = countSolutions(p, n, 2);
+        if (cnt === 1) {
+          return { N: n, puzzle: p, solution: sol, attempts: attempt };
+        }
+      }
+    }
+    return null;  // 실패
+  }
+
+  // ============================================================
+  // 보드 렌더링
+  // ============================================================
+  function buildBoardDOM() {
+    boardEl.innerHTML = '';
+    boardEl.style.gridTemplateColumns = `repeat(${N}, 1fr)`;
+    boardEl.style.gridTemplateRows = `repeat(${N}, 1fr)`;
+    pathsEl.setAttribute('viewBox', `0 0 ${N} ${N}`);
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.x = x;
+        cell.dataset.y = y;
+        const c = puzzle[y][x];
+        if (c.type === 'number') {
+          cell.classList.add('number');
+          const icon = document.createElement('span');
+          icon.className = 'cell-icon';
+          icon.textContent = '🎣';
+          cell.appendChild(icon);
+          const num = document.createElement('span');
+          num.className = 'cell-number';
+          num.textContent = c.value;
+          cell.appendChild(num);
+        } else if (c.type === 'fish') {
+          cell.classList.add('fish');
+          cell.textContent = '🐟';
+        }
+        boardEl.appendChild(cell);
+      }
+    }
+  }
+
+  function renderPaths() {
+    pathsEl.innerHTML = '';
+    for (const pid in userPaths) {
+      const path = userPaths[pid];
+      if (!path || path.cells.length < 2) continue;
+      const points = path.cells.map(c => `${c.x + 0.5},${c.y + 0.5}`).join(' ');
+      const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      polyline.setAttribute('points', points);
+      polyline.setAttribute('stroke', PATH_COLORS[pid % PATH_COLORS.length]);
+      polyline.setAttribute('stroke-width', '0.18');
+      polyline.setAttribute('fill', 'none');
+      polyline.setAttribute('stroke-linecap', 'round');
+      polyline.setAttribute('stroke-linejoin', 'round');
+      polyline.setAttribute('vector-effect', 'non-scaling-stroke');
+      polyline.style.strokeWidth = `${Math.max(4, 600 / N * 0.18)}px`;
+      pathsEl.appendChild(polyline);
+    }
+  }
+
+  function renderCellHighlights() {
+    document.querySelectorAll('.fishing-board .cell').forEach(cell => {
+      cell.classList.remove('in-current-path', 'is-hint', 'dragging-over');
+    });
+    if (activePathId !== null && userPaths[activePathId]) {
+      for (const c of userPaths[activePathId].cells) {
+        const cell = boardEl.children[c.y * N + c.x];
+        if (cell) cell.classList.add('in-current-path');
+      }
+    }
+    for (const c of hintCells) {
+      const cell = boardEl.children[c.y * N + c.x];
+      if (cell) cell.classList.add('is-hint');
+    }
+  }
+
+  function render() {
+    renderPaths();
+    renderCellHighlights();
+    updateStatus();
+  }
+
+  function updateStatus() {
+    diffInfoEl.textContent = t('diffPrefix') + difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+    statusEl.textContent = t('statusPlaying');
+  }
+
+  // ============================================================
+  // 사용자 입력
+  // ============================================================
+  function startPathAt(numberId) {
+    activePathId = numberId;
+    if (!userPaths[numberId] || userPaths[numberId].cells.length === 0) {
+      const start = solution[numberId].numberPos;  // 같은 위치
+      userPaths[numberId] = { cells: [start], complete: false };
+      cellOwner[start.y][start.x] = numberId;
+    }
+    hintCells = [];
+    render();
+  }
+
+  function clearPath(pid) {
+    if (!userPaths[pid]) return;
+    for (const c of userPaths[pid].cells) {
+      cellOwner[c.y][c.x] = null;
+    }
+    delete userPaths[pid];
+  }
+
+  function isAdjacent(a, b) {
+    return (Math.abs(a.x - b.x) + Math.abs(a.y - b.y)) === 1;
+  }
+
+  function tryExtendTo(x, y) {
+    if (won || activePathId === null) return false;
+    if (!inB(x, y)) return false;
+    const path = userPaths[activePathId];
+    if (!path || path.cells.length === 0) return false;
+    const last = path.cells[path.cells.length - 1];
+    // 이미 경로 안에 있는 칸인지 (한 칸 후퇴 = 마지막 직전 셀과 같으면 한 칸 빼기)
+    if (path.cells.length >= 2) {
+      const second = path.cells[path.cells.length - 2];
+      if (second.x === x && second.y === y) {
+        cellOwner[last.y][last.x] = null;
+        path.cells.pop();
+        path.complete = false;
+        render();
+        return true;
+      }
+    }
+    if (!isAdjacent(last, { x, y })) return false;
+    // 이미 다른 경로가 점유?
+    if (cellOwner[y][x] !== null && cellOwner[y][x] !== activePathId) return false;
+    // 이미 이 경로 안에 있는 셀? (자가 교차 차단)
+    for (const c of path.cells) {
+      if (c.x === x && c.y === y) return false;
+    }
+    const cellType = puzzle[y][x].type;
+    const number = solution[activePathId].length;  // 목표 길이
+    const stepsAfterStart = path.cells.length;     // 현재까지 number 제외 셀 수
+    if (cellType === 'number') return false;       // 다른 숫자칸 못 들어감
+    if (cellType === 'fish') {
+      // 물고기 도달 시: 정확한 길이 + 1 일 때만 합법 (path.cells = [num] + L cells = number+1 cells)
+      if (stepsAfterStart === number) {
+        path.cells.push({ x, y });
+        cellOwner[y][x] = activePathId;
+        path.complete = true;
+        // 활성 경로 해제
+        activePathId = null;
+        render();
+        checkWin();
+        return true;
+      } else {
+        // 길이 안 맞으면 거부 (조용히)
+        return false;
+      }
+    }
+    // 빈 칸 - 길이 초과 차단
+    if (stepsAfterStart >= number) return false;
+    path.cells.push({ x, y });
+    cellOwner[y][x] = activePathId;
+    render();
+    return true;
+  }
+
+  function clickCell(x, y) {
+    if (won) return;
+    const c = puzzle[y][x];
+    if (c.type === 'number') {
+      // 숫자칸 클릭 — 그 경로 시작/재시작
+      const numberId = numberPosToId(x, y);
+      if (numberId === null) return;
+      // 기존 경로 있으면 지우고 새로 시작
+      clearPath(numberId);
+      startPathAt(numberId);
+      return;
+    }
+    if (activePathId === null) {
+      // 활성 경로 없을 때 — 다른 경로의 셀이면 그 경로 활성화 (수정 모드)
+      if (cellOwner[y][x] !== null) {
+        const pid = cellOwner[y][x];
+        if (userPaths[pid] && !userPaths[pid].complete) {
+          activePathId = pid;
+          render();
+        }
+      }
+      return;
+    }
+    tryExtendTo(x, y);
+  }
+
+  function numberPosToId(x, y) {
+    for (let i = 0; i < solution.length; i++) {
+      const n = solution[i].numberPos;
+      if (n.x === x && n.y === y) return i;
+    }
+    return null;
+  }
+
+  // 드래그 처리
+  function onPointerDown(ev) {
+    if (won) return;
+    const cell = ev.target.closest('.cell');
+    if (!cell) return;
+    ev.preventDefault();
+    const x = parseInt(cell.dataset.x, 10);
+    const y = parseInt(cell.dataset.y, 10);
+    const c = puzzle[y][x];
+    if (c.type === 'number') {
+      const numberId = numberPosToId(x, y);
+      if (numberId === null) return;
+      clearPath(numberId);
+      startPathAt(numberId);
+      isDragging = true;
+    } else if (cellOwner[y][x] !== null) {
+      // 기존 경로 셀 클릭 시 그 경로 활성화 (truncate 위해)
+      const pid = cellOwner[y][x];
+      if (userPaths[pid] && !userPaths[pid].complete) {
+        activePathId = pid;
+        // 클릭한 셀까지로 잘라내기
+        const path = userPaths[pid];
+        const idx = path.cells.findIndex(c => c.x === x && c.y === y);
+        if (idx >= 0 && idx < path.cells.length - 1) {
+          for (let i = idx + 1; i < path.cells.length; i++) {
+            const r = path.cells[i];
+            cellOwner[r.y][r.x] = null;
+          }
+          path.cells = path.cells.slice(0, idx + 1);
+          path.complete = false;
+        }
+        render();
+        isDragging = true;
+      }
+    }
+  }
+
+  function onPointerMove(ev) {
+    if (!isDragging || won) return;
+    let target;
+    if (ev.touches && ev.touches.length > 0) {
+      const t = ev.touches[0];
+      target = document.elementFromPoint(t.clientX, t.clientY);
+    } else {
+      target = ev.target;
+    }
+    if (!target) return;
+    const cell = target.closest && target.closest('.cell');
+    if (!cell) return;
+    const x = parseInt(cell.dataset.x, 10);
+    const y = parseInt(cell.dataset.y, 10);
+    if (Number.isNaN(x) || Number.isNaN(y)) return;
+    tryExtendTo(x, y);
+  }
+
+  function onPointerUp() {
+    isDragging = false;
+  }
+
+  // 클릭은 보드 div 에서 별도로
+  boardEl.addEventListener('click', (e) => {
+    if (isDragging) return;  // 드래그 후 발생하는 click 은 무시
+    const cell = e.target.closest('.cell');
+    if (!cell) return;
+    const x = parseInt(cell.dataset.x, 10);
+    const y = parseInt(cell.dataset.y, 10);
+    clickCell(x, y);
+  });
+
+  boardEl.addEventListener('mousedown', onPointerDown);
+  boardEl.addEventListener('mousemove', onPointerMove);
+  document.addEventListener('mouseup', onPointerUp);
+  boardEl.addEventListener('touchstart', onPointerDown, { passive: false });
+  boardEl.addEventListener('touchmove', onPointerMove, { passive: false });
+  document.addEventListener('touchend', onPointerUp);
+
+  // ============================================================
+  // 컨트롤
+  // ============================================================
+  function undo() {
+    if (won || activePathId === null) return;
+    const path = userPaths[activePathId];
+    if (!path || path.cells.length <= 1) return;  // 숫자칸 자체는 안 빠짐
+    const last = path.cells.pop();
+    cellOwner[last.y][last.x] = null;
+    path.complete = false;
+    render();
+  }
+
+  function restart() {
+    // 모든 사용자 경로 지움
+    userPaths = {};
+    cellOwner = Array.from({length: N}, () => Array(N).fill(null));
+    activePathId = null;
+    hintCells = [];
+    won = false;
+    elapsedSec = 0;
+    if (timerInterval) clearInterval(timerInterval);
+    startTimer();
+    render();
+  }
+
+  function showHint() {
+    if (won) return;
+    hintCells = [];
+    // 정답에서 사용자가 아직 안 채운 셀 무작위 1개
+    const candidates = [];
+    for (const sol of solution) {
+      for (const c of sol.cells) {
+        if (cellOwner[c.y][c.x] === null && puzzle[c.y][c.x].type !== 'number' && puzzle[c.y][c.x].type !== 'fish') {
+          candidates.push({ ...c, pid: solution.indexOf(sol) });
+        }
+      }
+    }
+    if (candidates.length === 0) return;
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    hintCells.push(pick);
+    render();
+    // 자동 페이드아웃은 안 하고 다음 클릭/렌더 까지 유지
+  }
+
+  // ============================================================
+  // 타이머
+  // ============================================================
+  function startTimer() {
+    timerStart = Date.now();
+    elapsedSec = 0;
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 500);
+  }
+  function stopTimer() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  }
+  function updateTimer() {
+    elapsedSec = Math.floor((Date.now() - timerStart) / 1000);
+    timerEl.textContent = formatTime(elapsedSec);
+  }
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const ss = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+  }
+
+  // ============================================================
+  // 승리 감지
+  // ============================================================
+  function checkWin() {
+    // 모든 칸이 owner 있고 모든 경로 complete?
+    for (let y = 0; y < N; y++)
+      for (let x = 0; x < N; x++)
+        if (cellOwner[y][x] === null) return;
+    for (const pid in userPaths) {
+      if (!userPaths[pid].complete) return;
+    }
+    if (Object.keys(userPaths).length !== solution.length) return;
+    won = true;
+    stopTimer();
+    setTimeout(() => {
+      winTimeEl.textContent = formatTime(elapsedSec);
+      winOverlay.style.display = 'flex';
+    }, 200);
+  }
+
+  // ============================================================
+  // 게임 시작
+  // ============================================================
+  async function startNewPuzzle() {
+    won = false;
+    stopTimer();
+    hintCells = [];
+    activePathId = null;
+
+    startOverlay.style.display = 'none';
+    winOverlay.style.display = 'none';
+    loadingOverlay.style.display = 'flex';
+
+    genAttempts = 0;
+    const result = await generatePuzzle(difficulty, (att) => {
+      genAttempts = att;
+      genProgressEl.textContent = att + ' attempts';
+    });
+    if (!result) {
+      genProgressEl.textContent = 'Generation failed. Retrying...';
+      setTimeout(startNewPuzzle, 100);
+      return;
+    }
+    N = result.N;
+    puzzle = result.puzzle;
+    solution = result.solution;
+    userPaths = {};
+    cellOwner = Array.from({length: N}, () => Array(N).fill(null));
+    buildBoardDOM();
+    startTimer();
+    loadingOverlay.style.display = 'none';
+    render();
+  }
+
+  // ============================================================
+  // 시작 화면
+  // ============================================================
+  function setActiveBtn(group, value) {
+    document.querySelectorAll('.opt-btn[data-group="' + group + '"]').forEach(b => {
+      if (!b.classList.contains('locked')) {
+        b.classList.toggle('active', b.dataset.value === value);
+      }
+    });
+  }
+  function getActiveValue(group) {
+    const b = document.querySelector('.opt-btn[data-group="' + group + '"].active');
+    return b ? b.dataset.value : null;
+  }
+
+  function showStart() {
+    setActiveBtn('diff', difficulty);
+    setActiveBtn('lang', currentLang);
+    applyLang();
+    startOverlay.style.display = 'flex';
+    winOverlay.style.display = 'none';
+    loadingOverlay.style.display = 'none';
+    stopTimer();
+  }
+
+  function applyLang() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      el.textContent = t(k);
+    });
+    renderShortcuts();
+    if (puzzle) {
+      diffInfoEl.textContent = t('diffPrefix') + difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+      statusEl.textContent = won ? '' : t('statusPlaying');
+    }
+  }
+
+  function renderShortcuts() {
+    shortcutsEl.innerHTML =
+      '<div style="font-weight:600;margin-bottom:0.3rem;opacity:0.85">' + t('shortcutHeader') + '</div>' +
+      '<div>• ' + t('kStart') + '</div>' +
+      '<div>• ' + t('kExtend') + '</div>' +
+      '<div>• ' + t('kEnd') + '</div>' +
+      '<div>• ' + t('kUndo') + ' / ' + t('kHint') + '</div>';
+  }
+
+  // ============================================================
+  // 이벤트
+  // ============================================================
+  newBtn.addEventListener('click', () => startNewPuzzle());
+  restartBtn.addEventListener('click', restart);
+  undoBtn.addEventListener('click', undo);
+  hintBtn.addEventListener('click', showHint);
+  winNewBtn.addEventListener('click', () => startNewPuzzle());
+  settingsBtn.addEventListener('click', () => {
+    if (puzzle && !won) {
+      if (!confirm(t('confirmAbandon'))) return;
+    }
+    showStart();
+  });
+
+  startOverlay.addEventListener('click', (e) => {
+    const b = e.target.closest('.opt-btn');
+    if (!b || b.classList.contains('locked')) return;
+    const group = b.dataset.group;
+    setActiveBtn(group, b.dataset.value);
+    if (group === 'lang') {
+      currentLang = b.dataset.value;
+      applyLang();
+    }
+  });
+
+  startBtn.addEventListener('click', () => {
+    const dv = getActiveValue('diff') || 'easy';
+    const lv = getActiveValue('lang') || 'ko';
+    difficulty = dv;
+    currentLang = lv;
+    applyLang();
+    startNewPuzzle();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (startOverlay.style.display !== 'none' ||
+        loadingOverlay.style.display !== 'none' ||
+        winOverlay.style.display !== 'none') return;
+    if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
+      undo();
+      e.preventDefault();
+    } else if (e.key === 'h' || e.key === 'H') {
+      showHint();
+      e.preventDefault();
+    } else if (e.key === 'Escape') {
+      activePathId = null;
+      render();
+    }
+  });
+
+  // 부팅
+  applyLang();
+  showStart();
+})();
+</script>

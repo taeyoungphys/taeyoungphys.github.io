@@ -11,5 +11,6 @@ Extra content beyond the main posts and series.
 
 - [Gomoku](/playground/omok/)
 - [Sudoku](/playground/sudoku/)
+- [Fishing puzzle](/playground/fishing/)
 
 *More games will be added.*
