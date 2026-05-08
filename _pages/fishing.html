@@ -240,9 +240,9 @@ toc: false
         <div class="start-opt-label" data-i18n="diffLabel"></div>
         <div class="start-opt-radios">
           <button type="button" class="opt-btn active" data-group="diff" data-value="easy"><span data-i18n="diffEasy"></span></button>
-          <button type="button" class="opt-btn locked" data-group="diff" data-value="medium" disabled><span data-i18n="diffMedium"></span></button>
-          <button type="button" class="opt-btn locked" data-group="diff" data-value="hard" disabled><span data-i18n="diffHard"></span></button>
-          <button type="button" class="opt-btn locked" data-group="diff" data-value="expert" disabled><span data-i18n="diffExpert"></span></button>
+          <button type="button" class="opt-btn"        data-group="diff" data-value="medium"><span data-i18n="diffMedium"></span></button>
+          <button type="button" class="opt-btn"        data-group="diff" data-value="hard"><span data-i18n="diffHard"></span></button>
+          <button type="button" class="opt-btn"        data-group="diff" data-value="expert"><span data-i18n="diffExpert"></span></button>
         </div>
       </div>
 
@@ -290,9 +290,9 @@ toc: false
       startSubtitle: '난이도와 언어를 선택하세요',
       diffLabel: '난이도',
       diffEasy: 'Easy',
-      diffMedium: 'Medium (준비 중)',
-      diffHard: 'Hard (준비 중)',
-      diffExpert: 'Expert (준비 중)',
+      diffMedium: 'Medium',
+      diffHard: 'Hard',
+      diffExpert: 'Expert',
       langLabel: '언어 / Language',
       startBtn: '게임 시작',
       generating: '퍼즐 생성 중...',
@@ -312,16 +312,17 @@ toc: false
       kExtend: '인접 칸 클릭/드래그로 연장',
       kEnd:    '물고기에 도달하면 경로 완성',
       kUndo:   '한 칸 되돌리기',
-      kHint:   '정답 한 칸 미리보기'
+      kHint:   '정답 한 칸 미리보기',
+      attemptsSuffix: '회 시도'
     },
     en: {
       startTitle: 'Fishing Puzzle',
       startSubtitle: 'Choose difficulty and language',
       diffLabel: 'Difficulty',
       diffEasy: 'Easy',
-      diffMedium: 'Medium (coming)',
-      diffHard: 'Hard (coming)',
-      diffExpert: 'Expert (coming)',
+      diffMedium: 'Medium',
+      diffHard: 'Hard',
+      diffExpert: 'Expert',
       langLabel: 'Language',
       startBtn: 'Start',
       generating: 'Generating puzzle...',
@@ -341,7 +342,8 @@ toc: false
       kExtend: 'Click/drag adjacent cells to extend',
       kEnd:    'Reach a fish to complete',
       kUndo:   'Step back one cell',
-      kHint:   'Reveal one solution cell'
+      kHint:   'Reveal one solution cell',
+      attemptsSuffix: 'attempts'
     }
   };
 
@@ -358,13 +360,13 @@ toc: false
   ];
 
   // ============================================================
-  // 난이도 설정 (Easy 만 활성)
+  // 난이도 설정
   // ============================================================
   const DIFFICULTY_PARAMS = {
-    easy:   { N: 6, K: [5, 7], maxNum: 8,  minReach: 1.0 },
-    medium: { N: 7, K: [7, 9], maxNum: 9,  minReach: 1.5 },
-    hard:   { N: 9, K: [10, 13], maxNum: 11, minReach: 2.0 },
-    expert: { N: 11, K: [14, 18], maxNum: 13, minReach: 2.5 }
+    easy:   { N: 6,  K: [5, 7],   maxNum: 8,  minReach: 1.0, maxAttempts: 150 },
+    medium: { N: 7,  K: [7, 9],   maxNum: 9,  minReach: 1.5, maxAttempts: 250 },
+    hard:   { N: 9,  K: [10, 13], maxNum: 11, minReach: 2.0, maxAttempts: 400 },
+    expert: { N: 11, K: [14, 18], maxNum: 13, minReach: 2.5, maxAttempts: 600 }
   };
 
   // ============================================================
@@ -430,7 +432,7 @@ toc: false
     const sx = Math.floor(Math.random() * n);
     const sy = Math.floor(Math.random() * n);
     let depth = 0;
-    const maxDepth = n * n * 30;  // 백트랙 시도 한도
+    const maxDepth = Math.max(n * n * 100, 5000);  // 큰 보드 backtrack 여유
 
     function neighbors(x, y) {
       const out = [];
@@ -520,9 +522,9 @@ toc: false
   }
 
   // ============================================================
-  // 솔버 — 유일해 검증
+  // 솔버 — 유일해 검증 (노드 한도 있음, 한도 초과 시 -1 반환 = 미결정)
   // ============================================================
-  function countSolutions(puzzleGrid, n, limit) {
+  function countSolutions(puzzleGrid, n, limit, maxNodes) {
     const numbers = [];
     const fishList = [];
     for (let y = 0; y < n; y++) {
@@ -535,17 +537,19 @@ toc: false
     if (numbers.length !== fishList.length) return 0;
 
     const used = Array.from({length: n}, () => Array(n).fill(false));
-    // 모든 숫자 / 물고기 셀을 처음부터 used 로 표시
     for (const num of numbers) used[num.y][num.x] = true;
     for (const f of fishList) used[f.y][f.x] = true;
 
     let count = 0;
+    let nodes = 0;
     const fishUsed = new Set();
+    const NODE_LIMIT = maxNodes || 200000;
+    let aborted = false;
 
     function findPathsAndRecurse(start, end, length, onComplete) {
-      // start, end 모두 used. 길이 = end 포함, start 제외 — length 만큼 이동.
       function dfs(cx, cy, remaining) {
-        if (count >= limit) return;
+        if (aborted || count >= limit) return;
+        if (++nodes > NODE_LIMIT) { aborted = true; return; }
         if (remaining === 0) {
           if (cx === end.x && cy === end.y) onComplete();
           return;
@@ -553,7 +557,7 @@ toc: false
         const md = Math.abs(cx - end.x) + Math.abs(cy - end.y);
         if (md > remaining) return;
         for (const [dx, dy] of DIRS) {
-          if (count >= limit) return;
+          if (aborted || count >= limit) return;
           const nx = cx + dx, ny = cy + dy;
           if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
           if (used[ny][nx]) {
@@ -571,9 +575,8 @@ toc: false
     }
 
     function backtrack(idx) {
-      if (count >= limit) return;
+      if (aborted || count >= limit) return;
       if (idx === numbers.length) {
-        // 모든 칸 채워졌는지 검증
         for (let y = 0; y < n; y++)
           for (let x = 0; x < n; x++)
             if (!used[y][x]) return;
@@ -582,7 +585,7 @@ toc: false
       }
       const num = numbers[idx];
       for (let i = 0; i < fishList.length; i++) {
-        if (count >= limit) return;
+        if (aborted || count >= limit) return;
         if (fishUsed.has(i)) continue;
         fishUsed.add(i);
         findPathsAndRecurse(num, fishList[i], num.length, () => {
@@ -593,6 +596,7 @@ toc: false
     }
 
     backtrack(0);
+    if (aborted) return -1;  // 미결정 (이 퍼즐은 스킵)
     return count;
   }
 
@@ -631,38 +635,39 @@ toc: false
     const params = DIFFICULTY_PARAMS[diff];
     const n = params.N;
     const total = n * n;
-    const maxAttempts = 100;
+    const maxAttempts = params.maxAttempts || 150;
+    // 솔버 노드 한도 — 큰 보드는 더 후하게
+    const maxNodes = { easy: 30000, medium: 80000, hard: 250000, expert: 600000 }[diff] || 100000;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       if (onProgress) onProgress(attempt);
-      await new Promise(r => setTimeout(r, 0));  // UI yield
+      // UI yield 주기적으로
+      if (attempt % 3 === 0) await new Promise(r => setTimeout(r, 0));
 
       const ham = generateHamiltonianPath(n);
       if (!ham || ham.length !== total) continue;
 
-      // K 후보 무작위
       const Kmin = params.K[0], Kmax = params.K[1];
       for (let kAttempt = 0; kAttempt < 5; kAttempt++) {
         const K = Kmin + Math.floor(Math.random() * (Kmax - Kmin + 1));
-        const minLen = 2;                    // 숫자값 ≥ 1
-        const maxLen = params.maxNum + 1;    // 숫자값 ≤ maxNum
+        const minLen = 2;
+        const maxLen = params.maxNum + 1;
         const pieces = cutPath(ham, K, minLen, maxLen);
         if (!pieces) continue;
 
         const { puzzle: p, solution: sol } = buildPuzzleFromPieces(pieces, n);
 
-        // 재미 메트릭 통과 확인
         const reach = fishReachabilityScore(p, n);
         if (reach < params.minReach) continue;
 
-        // 유일해 검증
-        const cnt = countSolutions(p, n, 2);
+        const cnt = countSolutions(p, n, 2, maxNodes);
         if (cnt === 1) {
           return { N: n, puzzle: p, solution: sol, attempts: attempt };
         }
+        // cnt === -1 (미결정 / 너무 어려움) 이거나 ≠ 1 → 다음 시도
       }
     }
-    return null;  // 실패
+    return null;
   }
 
   // ============================================================
@@ -1036,7 +1041,7 @@ toc: false
     genAttempts = 0;
     const result = await generatePuzzle(difficulty, (att) => {
       genAttempts = att;
-      genProgressEl.textContent = att + ' attempts';
+      genProgressEl.textContent = att + ' ' + t('attemptsSuffix');
     });
     if (!result) {
       genProgressEl.textContent = 'Generation failed. Retrying...';
