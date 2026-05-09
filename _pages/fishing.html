@@ -115,6 +115,33 @@ toc: false
     padding: 0.55rem 0.7rem;
     line-height: 1.7;
   }
+  .fishing-rules {
+    margin-top: 0.6rem;
+    font-size: 0.82rem;
+    background: rgba(99,154,235,0.08);
+    border-left: 3px solid #6ab0ff;
+    border-radius: 4px;
+    padding: 0.6rem 0.85rem;
+    line-height: 1.7;
+  }
+  .fishing-rules h4 {
+    margin: 0 0 0.4rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #cfd8e6;
+  }
+  .fishing-rules ol {
+    margin: 0; padding-left: 1.3rem;
+  }
+  .fishing-rules li {
+    margin-bottom: 0.18rem;
+  }
+  .fishing-rules code {
+    background: rgba(255,255,255,0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.92em;
+  }
   .fishing-shortcuts .key {
     display: inline-block;
     background: #333; color: #ddd;
@@ -219,7 +246,6 @@ toc: false
     <button id="fishing-newpuzzle" type="button" data-i18n="newPuzzle"></button>
     <button id="fishing-restart"   type="button" data-i18n="restart"></button>
     <button id="fishing-undo"      type="button" data-i18n="undo"></button>
-    <button id="fishing-hint"      type="button" data-i18n="hint"></button>
     <button id="fishing-settings"  type="button" data-i18n="settings"></button>
   </div>
 
@@ -229,6 +255,8 @@ toc: false
   </div>
 
   <div class="fishing-shortcuts" id="fishing-shortcuts"></div>
+
+  <div class="fishing-rules" id="fishing-rules"></div>
 
   <!-- ===== Start overlay ===== -->
   <div class="fishing-overlay" id="fishing-start">
@@ -298,7 +326,6 @@ toc: false
       generating: '퍼즐 생성 중...',
       restart: '재시작',
       undo: '← 한 칸 뒤로',
-      hint: '힌트',
       newPuzzle: '새 퍼즐',
       settings: '설정',
       diffPrefix: '난이도: ',
@@ -311,9 +338,17 @@ toc: false
       kStart:  '숫자 칸 클릭으로 경로 시작',
       kExtend: '인접 칸 클릭/드래그로 연장',
       kEnd:    '물고기에 도달하면 경로 완성',
-      kUndo:   '한 칸 되돌리기',
-      kHint:   '정답 한 칸 미리보기',
-      attemptsSuffix: '회 시도'
+      kUndo:   'Z / Backspace 로 한 칸 되돌리기',
+      kEsc:    'Esc 로 현재 경로 선택 해제',
+      attemptsSuffix: '회 시도',
+      // 규칙
+      rulesHeader: '게임 규칙',
+      rule1: '🎣 숫자칸에서 출발해 🐟 물고기까지 선을 긋습니다 (상하좌우만, 대각선 X).',
+      rule2: '숫자는 <b>숫자칸을 제외한</b> 경로 칸 수입니다 (즉 중간 + 물고기칸 합).',
+      rule3: '경로끼리 칸을 공유할 수 없습니다.',
+      rule4: '<b>모든 칸</b>이 어떤 경로 위에 놓이도록 빠짐없이 채워야 합니다.',
+      rule5: '어떤 숫자가 어떤 물고기와 짝이 되는지는 <b>알려주지 않습니다</b>. 추리해서 풀어내세요.',
+      rule6: '해(정답)는 항상 <b>유일</b>합니다.'
     },
     en: {
       startTitle: 'Fishing Puzzle',
@@ -328,7 +363,6 @@ toc: false
       generating: 'Generating puzzle...',
       restart: 'Restart',
       undo: '← Undo',
-      hint: 'Hint',
       newPuzzle: 'New puzzle',
       settings: 'Settings',
       diffPrefix: 'Difficulty: ',
@@ -341,9 +375,17 @@ toc: false
       kStart:  'Click number to start path',
       kExtend: 'Click/drag adjacent cells to extend',
       kEnd:    'Reach a fish to complete',
-      kUndo:   'Step back one cell',
-      kHint:   'Reveal one solution cell',
-      attemptsSuffix: 'attempts'
+      kUndo:   'Z / Backspace to step back',
+      kEsc:    'Esc to deselect current path',
+      attemptsSuffix: 'attempts',
+      // Rules
+      rulesHeader: 'Rules',
+      rule1: '🎣 From a number, draw a line to a 🐟 fish (orthogonal only — no diagonal).',
+      rule2: 'The number = <b>cells excluding the number cell</b> (intermediate + fish cell).',
+      rule3: 'Lines cannot share cells.',
+      rule4: '<b>Every cell</b> on the board must be covered by some line — no empty cell left.',
+      rule5: 'Which number connects to which fish is <b>not given</b>. Deduce by yourself.',
+      rule6: 'The solution is always <b>unique</b>.'
     }
   };
 
@@ -360,13 +402,13 @@ toc: false
   ];
 
   // ============================================================
-  // 난이도 설정
+  // 난이도 설정 — Expert 는 K 줄이고 maxNum 늘려 유일해 확보 향상
   // ============================================================
   const DIFFICULTY_PARAMS = {
     easy:   { N: 6,  K: [5, 7],   maxNum: 8,  minReach: 1.0, maxAttempts: 150 },
-    medium: { N: 7,  K: [7, 9],   maxNum: 9,  minReach: 1.5, maxAttempts: 250 },
-    hard:   { N: 9,  K: [10, 13], maxNum: 11, minReach: 2.0, maxAttempts: 400 },
-    expert: { N: 11, K: [14, 18], maxNum: 13, minReach: 2.5, maxAttempts: 600 }
+    medium: { N: 7,  K: [7, 9],   maxNum: 9,  minReach: 1.3, maxAttempts: 250 },
+    hard:   { N: 9,  K: [9, 12],  maxNum: 12, minReach: 1.5, maxAttempts: 300 },
+    expert: { N: 11, K: [11, 14], maxNum: 15, minReach: 1.8, maxAttempts: 400 }
   };
 
   // ============================================================
@@ -384,7 +426,6 @@ toc: false
   let timerStart = 0;
   let timerInterval = null;
   let won = false;
-  let hintCells = [];       // 힌트로 표시 중인 셀들
   let genAttempts = 0;
 
   // ============================================================
@@ -398,9 +439,9 @@ toc: false
   const newBtn     = document.getElementById('fishing-newpuzzle');
   const restartBtn = document.getElementById('fishing-restart');
   const undoBtn    = document.getElementById('fishing-undo');
-  const hintBtn    = document.getElementById('fishing-hint');
   const settingsBtn= document.getElementById('fishing-settings');
   const shortcutsEl= document.getElementById('fishing-shortcuts');
+  const rulesEl    = document.getElementById('fishing-rules');
   const startOverlay = document.getElementById('fishing-start');
   const startBtn   = document.getElementById('start-btn');
   const loadingOverlay = document.getElementById('fishing-loading');
@@ -636,8 +677,8 @@ toc: false
     const n = params.N;
     const total = n * n;
     const maxAttempts = params.maxAttempts || 150;
-    // 솔버 노드 한도 — 큰 보드는 더 후하게
-    const maxNodes = { easy: 30000, medium: 80000, hard: 250000, expert: 600000 }[diff] || 100000;
+    // 솔버 노드 한도 — 큰 보드는 더 후하게 (Expert 1.5M 까지)
+    const maxNodes = { easy: 30000, medium: 100000, hard: 500000, expert: 1500000 }[diff] || 100000;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       if (onProgress) onProgress(attempt);
@@ -725,17 +766,13 @@ toc: false
 
   function renderCellHighlights() {
     document.querySelectorAll('.fishing-board .cell').forEach(cell => {
-      cell.classList.remove('in-current-path', 'is-hint', 'dragging-over');
+      cell.classList.remove('in-current-path', 'dragging-over');
     });
     if (activePathId !== null && userPaths[activePathId]) {
       for (const c of userPaths[activePathId].cells) {
         const cell = boardEl.children[c.y * N + c.x];
         if (cell) cell.classList.add('in-current-path');
       }
-    }
-    for (const c of hintCells) {
-      const cell = boardEl.children[c.y * N + c.x];
-      if (cell) cell.classList.add('is-hint');
     }
   }
 
@@ -760,7 +797,6 @@ toc: false
       userPaths[numberId] = { cells: [start], complete: false };
       cellOwner[start.y][start.x] = numberId;
     }
-    hintCells = [];
     render();
   }
 
@@ -956,31 +992,11 @@ toc: false
     userPaths = {};
     cellOwner = Array.from({length: N}, () => Array(N).fill(null));
     activePathId = null;
-    hintCells = [];
     won = false;
     elapsedSec = 0;
     if (timerInterval) clearInterval(timerInterval);
     startTimer();
     render();
-  }
-
-  function showHint() {
-    if (won) return;
-    hintCells = [];
-    // 정답에서 사용자가 아직 안 채운 셀 무작위 1개
-    const candidates = [];
-    for (const sol of solution) {
-      for (const c of sol.cells) {
-        if (cellOwner[c.y][c.x] === null && puzzle[c.y][c.x].type !== 'number' && puzzle[c.y][c.x].type !== 'fish') {
-          candidates.push({ ...c, pid: solution.indexOf(sol) });
-        }
-      }
-    }
-    if (candidates.length === 0) return;
-    const pick = candidates[Math.floor(Math.random() * candidates.length)];
-    hintCells.push(pick);
-    render();
-    // 자동 페이드아웃은 안 하고 다음 클릭/렌더 까지 유지
   }
 
   // ============================================================
@@ -1031,7 +1047,6 @@ toc: false
   async function startNewPuzzle() {
     won = false;
     stopTimer();
-    hintCells = [];
     activePathId = null;
 
     startOverlay.style.display = 'none';
@@ -1090,6 +1105,7 @@ toc: false
       el.textContent = t(k);
     });
     renderShortcuts();
+    renderRules();
     if (puzzle) {
       diffInfoEl.textContent = t('diffPrefix') + difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
       statusEl.textContent = won ? '' : t('statusPlaying');
@@ -1102,7 +1118,21 @@ toc: false
       '<div>• ' + t('kStart') + '</div>' +
       '<div>• ' + t('kExtend') + '</div>' +
       '<div>• ' + t('kEnd') + '</div>' +
-      '<div>• ' + t('kUndo') + ' / ' + t('kHint') + '</div>';
+      '<div>• ' + t('kUndo') + '</div>' +
+      '<div>• ' + t('kEsc') + '</div>';
+  }
+
+  function renderRules() {
+    rulesEl.innerHTML =
+      '<h4>' + t('rulesHeader') + '</h4>' +
+      '<ol>' +
+        '<li>' + t('rule1') + '</li>' +
+        '<li>' + t('rule2') + '</li>' +
+        '<li>' + t('rule3') + '</li>' +
+        '<li>' + t('rule4') + '</li>' +
+        '<li>' + t('rule5') + '</li>' +
+        '<li>' + t('rule6') + '</li>' +
+      '</ol>';
   }
 
   // ============================================================
@@ -1111,7 +1141,6 @@ toc: false
   newBtn.addEventListener('click', () => startNewPuzzle());
   restartBtn.addEventListener('click', restart);
   undoBtn.addEventListener('click', undo);
-  hintBtn.addEventListener('click', showHint);
   winNewBtn.addEventListener('click', () => startNewPuzzle());
   settingsBtn.addEventListener('click', () => {
     if (puzzle && !won) {
@@ -1146,9 +1175,6 @@ toc: false
         winOverlay.style.display !== 'none') return;
     if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
       undo();
-      e.preventDefault();
-    } else if (e.key === 'h' || e.key === 'H') {
-      showHint();
       e.preventDefault();
     } else if (e.key === 'Escape') {
       activePathId = null;
