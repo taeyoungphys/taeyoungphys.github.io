@@ -523,17 +523,43 @@ toc: false
     return false;
   }
 
+  // 이 방향에서 활2 (양쪽 빈 _BB_) 가 만들어지는가
+  // (x,y) 가 활2 의 일부가 되는지 검사
+  function createsOpenTwoInDir(b, x, y, dx, dy, color) {
+    let lc=0, rc=0;
+    for (let s=1; s<=2; s++) {
+      const nx=x+s*dx, ny=y+s*dy;
+      if (inB(nx,ny) && b[ny][nx]===color) rc++; else break;
+    }
+    for (let s=1; s<=2; s++) {
+      const nx=x-s*dx, ny=y-s*dy;
+      if (inB(nx,ny) && b[ny][nx]===color) lc++; else break;
+    }
+    if (lc + rc + 1 !== 2) return false;
+    const lx=x-(lc+1)*dx, ly=y-(lc+1)*dy;
+    const rx=x+(rc+1)*dx, ry=y+(rc+1)*dy;
+    // 양 끝 모두 빈 칸이어야 활2
+    return inB(lx,ly) && b[ly][lx]===null && inB(rx,ry) && b[ry][rx]===null;
+  }
+
+  // 표준 렌주룰:
+  //   - 5목 만들면 항상 합법 (우선)
+  //   - 6목 이상 (장목): 금수
+  //   - 4-4 (쌍사): 금수
+  //   - 4 가 1개라도 만들어지면 → 3-3 규칙 적용 안 됨 (4-3, 4-3-3 모두 합법)
+  //   - 3-3 (쌍삼): 4 없이 활3 둘 이상일 때만 금수
   function isForbidden(b, x, y) {
     const m = maxConsec(b, x, y, 'B');
-    if (m === 5) return false;
-    if (m >= 6) return true;
+    if (m === 5) return false;        // 5목 우선 (합법)
+    if (m >= 6) return true;          // 장목 금수
     let fours = 0, openThrees = 0;
     for (const [dx,dy] of DIRS) {
       if (createsFourInDir(b,x,y,dx,dy,'B')) fours++;
       if (createsOpenThreeInDir(b,x,y,dx,dy,'B')) openThrees++;
     }
-    if (fours >= 2) return true;
-    if (openThrees >= 2) return true;
+    if (fours >= 2) return true;      // 4-4 금수
+    if (fours >= 1) return false;     // 4-3, 4-3-3 등 — 4 가 3-3 규칙 무력화
+    if (openThrees >= 2) return true; // 3-3 금수 (4 없을 때)
     return false;
   }
 
@@ -707,39 +733,40 @@ toc: false
   // 사용자 요청: 4-3 도 4-4 와 유사한 매우 높은 점수
   function bonusForMove(b, x, y, color) {
     // assumes b[y][x] === color
-    let consecutiveFours = 0, gappedFours = 0, openThrees = 0;
+    let consecutiveFours = 0, gappedFours = 0, openThrees = 0, openTwos = 0;
     let maxRun = 0;
     for (let i = 0; i < DIRS.length; i++) {
       const dx = DIRS[i][0], dy = DIRS[i][1];
       const r = countConsec(b, x, y, dx, dy, color);
       if (r > maxRun) maxRun = r;
       if (r === 4) {
-        consecutiveFours++;            // 이 방향에서 BBBB (연속 4)
+        consecutiveFours++;
       } else if (createsFourInDir(b, x, y, dx, dy, color)) {
-        gappedFours++;                 // 이 방향에서 갭 4 (B.BBB 등)
+        gappedFours++;
       }
       if (createsOpenThreeInDir(b, x, y, dx, dy, color)) openThrees++;
+      if (createsOpenTwoInDir(b, x, y, dx, dy, color)) openTwos++;
     }
     const totalFours = consecutiveFours + gappedFours;
     const isBlack = color === 'B';
     let bonus = 0;
 
-    // 5목
     if (maxRun === 5) bonus += 1e8;
-    // 장목 (백/free 만)
     if (maxRun >= 6 && (!renjuMode || !isBlack)) bonus += 5e7;
-
-    // 4-4 — 즉시 승 (백/free 만; 흑+렌주는 filter)
     if (totalFours >= 2 && (!renjuMode || !isBlack)) bonus += 5e6;
-    // 4-3 — 2-3수 후 승 (사용자 요청: 4-4 와 유사한 점수)
     if (totalFours >= 1 && openThrees >= 1) bonus += 4e6;
-    // 3-3 — 3-4수 후 승 (백/free 만)
     if (openThrees >= 2 && (!renjuMode || !isBlack)) bonus += 1.5e6;
 
-    // 연속 4 우대 — 갭 4 보다 5배 점수
+    // 연속 4 / 갭 4 / 활3 단방향 가산
     if (consecutiveFours >= 1) bonus += 5e4 * consecutiveFours;
-    // 갭 4 도 약간 (단일 위협)
     if (gappedFours >= 1) bonus += 1e4 * gappedFours;
+    if (openThrees >= 1 && totalFours === 0) bonus += 2e3 * openThrees;
+
+    // *날 일 / 나이트* 패턴 — 다방향 활2 셋업
+    // 한 수로 여러 방향에 활2 형성 = 다음 수에 다중 위협 가능
+    if (openTwos >= 3) bonus += 1.5e5;        // 3 방향 활2 = 잠재 다중 위협
+    else if (openTwos >= 2) bonus += 3e4;     // 2 방향 활2
+    else if (openTwos >= 1) bonus += 2e2;     // 단방향 활2
 
     return bonus;
   }
